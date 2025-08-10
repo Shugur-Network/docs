@@ -7,105 +7,74 @@ sidebar_position: 8
 ## Service Level Objectives (SLO)
 
 - **Uptime:** 99.9% monthly availability target
-- **Response time:** <100ms for WebSocket connections
-- **Event delivery:** <1s latency for real-time events
-- **Recovery time:** <15 minutes for most incidents
+- **Response time:** Under 100ms for WebSocket connections
+- **Event delivery:** Under 1s latency for real-time events
+- **Recovery time:** Under 15 minutes for most incidents
 
 ## Infrastructure
 
-### Architecture
-- **Load balancing:** Multiple relay instances
-- **Database:** Replicated PostgreSQL with automatic failover
-- **Monitoring:** Real-time health checks and alerting
-- **Backup:** Daily automated backups with point-in-time recovery
+### Multi-Region Deployment
 
-### Geographic Distribution
-- **Primary:** US East (Virginia)
-- **Secondary:** US West (Oregon) - *Coming Q4 2025*
-- **CDN:** Cloudflare for static assets
+- **Primary:** US-East-1 (Virginia)
+- **Secondary:** EU-Central-1 (Frankfurt)
+- **Tertiary:** AP-Southeast-1 (Singapore)
 
-## Status Monitoring
+### High Availability Features
 
-### Public Status Page
-🔗 **[status.relay.shugur.net](https://status.relay.shugur.net)**
+- **Load balancing** across multiple server instances
+- **Automatic failover** for database connections
+- **Health checks** every 30 seconds
+- **Circuit breakers** for upstream services
 
-Real-time monitoring of:
-- WebSocket endpoint availability
-- Connection success rates
-- Event publishing latency
-- Database performance
+## Monitoring
 
-### Incident Communication
-- **Status updates:** Posted to status page within 5 minutes
-- **Root cause analysis:** Published within 24 hours
-- **Postmortems:** For all major incidents
+### Real-Time Metrics
 
-### Metrics Dashboard
-�� **[metrics.relay.shugur.net](https://metrics.relay.shugur.net)** *(Coming Soon)*
+- Connection count and health
+- Message throughput and latency
+- Storage performance and capacity
+- Network quality indicators
 
-Public visibility into:
-- Active connections
-- Events per second
-- Regional performance
-- Historical uptime
+### Alerting
 
-## Incident Response
+- **Instant alerts** for service degradation
+- **Escalation policies** for critical incidents
+- **Status page** updates within 2 minutes
+- **Post-incident** analysis and reports
 
-### Classification
-- **P0 (Critical):** Service completely unavailable
-- **P1 (High):** Significant performance degradation
-- **P2 (Medium):** Limited feature impact
-- **P3 (Low):** Minor issues or planned maintenance
+## Data Protection
 
-### Response Times
-- **P0:** <15 minutes initial response
-- **P1:** <1 hour initial response
-- **P2:** <4 hours initial response
-- **P3:** <24 hours initial response
+### Backup Strategy
 
-## Planned Maintenance
+- **Continuous replication** to secondary regions
+- **Daily snapshots** with 30-day retention
+- **Point-in-time recovery** capability
+- **Encrypted storage** at rest and in transit
 
-- **Schedule:** Sundays 06:00-08:00 UTC
-- **Frequency:** Monthly or as needed
-- **Notice:** 48-hour advance notification
-- **Duration:** Typically <30 minutes
-- **Impact:** Brief connection resets, automatic reconnection
+### Security Measures
 
-## Historical Performance
+- **TLS 1.3** encryption for all connections
+- **Rate limiting** to prevent abuse
+- **DDoS protection** at multiple layers
+- **Regular security audits** and updates
 
-### Recent Uptime
-- **Last 30 days:** 99.95%
-- **Last 90 days:** 99.92%
-- **Last 12 months:** 99.89%
+## Status Page
 
-### Major Incidents (2025)
-- **Aug 1:** Database failover - 12 minutes downtime
-- **Jun 15:** Network connectivity - 8 minutes degraded
-- **May 3:** Load balancer update - 5 minutes maintenance
+Visit [status.relay.shugur.net](https://status.relay.shugur.net) for:
 
-## Reliability Commitments
-
-### What we monitor
-✅ WebSocket connectivity  
-✅ Event publishing success  
-✅ Database availability  
-✅ SSL certificate validity  
-✅ DNS resolution  
-
-### What we guarantee
-- Best-effort event delivery
-- Transparent incident communication
-- Proactive monitoring and alerting
-- Regular security updates
-
-### What we don't guarantee
-- Permanent event storage
-- 100% uptime (force majeure events)
-- Service availability during planned maintenance
-- Data recovery for user errors
+- **Real-time status** of all services
+- **Incident history** and resolution details
+- **Maintenance windows** and scheduled updates
+- **Performance metrics** and trends
 
 ## Contact for Issues
 
-- **Immediate issues:** [Status page](https://status.relay.shugur.net)
-- **Service reports:** hello@shugur.com
-- **Technical support:** [GitHub Issues](https://github.com/Shugur-Network/relay/issues)
+If you experience problems:
+
+1. Check the [status page](https://status.relay.shugur.net)
+2. Review our [troubleshooting guide](/docs/getting-started#troubleshooting)
+3. Contact support: [contact@shugur.com](mailto:contact@shugur.com)
+
+## Changelog
+
+For detailed service updates, see our [changelog](/docs/changelog).
