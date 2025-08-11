@@ -1,0 +1,163 @@
+/* Hero Section */
+.hero {
+  background-color: var(--ifm-background-color);
+  padding: 4rem 0 2rem 0;
+}
+
+.heroContent {
+  text-align: center;
+}
+
+.heroContent h1 {
+  font-family: 'League Spartan', sans-serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--ifm-heading-color);
+  margin-bottom: 1rem;
+}
+
+.heroContent p {
+  font-size: 1.2rem;
+  color: var(--ifm-color-emphasis-700);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Features Section */
+.features {
+  padding: 3rem 1rem;
+  background-color: #FAFAFA;
+}
+
+/* Project Tile */
+.projectTile {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  padding: 2rem;
+  margin: 0 auto;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  max-width: 700px;
+  width: 100%;
+}
+
+.projectTile:hover {
+  box-shadow: 0 10px 25px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  border-color: rgba(54, 186, 152, 0.3);
+  transform: translateY(-2px);
+}
+
+.tileContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.tileText {
+  flex: 1;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.tileText h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  color: #1A1A1A;
+  font-weight: 700;
+  font-family: 'League Spartan', ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.025em;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: #dcfce7;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.tileText p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #64748b;
+  margin-bottom: 0;
+}
+
+.tileActions {
+  display: flex;
+  align-items: center;
+}
+
+.documentationButton {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.documentationButton:hover {
+  border-color: #36BA98;
+  color: #36BA98;
+  text-decoration: none;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media screen and (max-width: 996px) {
+  .heroContent h1 {
+    font-size: 2.5rem;
+  }
+  
+  .heroContent p {
+    font-size: 1rem;
+    padding: 0 1rem;
+  }
+  
+  .features {
+    padding: 2rem 0.5rem;
+  }
+  
+  .projectTile {
+    padding: 1.5rem;
+    margin: 0 auto;
+    max-width: none;
+  }
+  
+  .tileContent {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+  
+  .titleRow {
+    justify-content: center;
+  }
+  
+  .tileText h1 {
+    font-size: 1.25rem;
+  }
+  
+  .tileText p {
+    font-size: 0.875rem;
+  }
+}

@@ -1,36 +1,38 @@
 ---
 sidebar_position: 1
+slug: /intro
+title: Shugur Relay Documentation
 ---
 
-# Shugur Relay
+Shugur Relay is a reliable, developer-friendly Nostr relay designed to provide robust and scalable infrastructure for the Nostr ecosystem.
 
-A reliable, developer‑friendly Nostr relay with sensible defaults and transparent limits.
+## What is Shugur Relay?
 
-- **Service endpoint:** `wss://relay.shugur.net`
-- **Status:** https://status.relay.shugur.net
-- **Source code:** https://github.com/Shugur-Network/relay
+Shugur Relay is a high-performance Nostr relay implementation that focuses on:
 
-## What you get
+- **Reliability**: Built with stability and uptime as core priorities
+- **Developer Experience**: Clean APIs and comprehensive documentation
+- **Scalability**: Designed to handle high throughput and large user bases
+- **Standards Compliance**: Full support for Nostr protocol specifications
 
-- ✅ Stable WebSocket endpoint
-- ✅ Clearly defined policies & limits
-- ✅ Public status and incident history
-- ✅ Self‑hosting guide
-- ✅ Production-ready infrastructure
-- ✅ Developer-first approach
+## Getting Started
 
-## Quick Connect
+Ready to start using Shugur Relay? Check out our [Getting Started Guide](./getting-started) to begin your journey.
 
-```javascript
-const ws = new WebSocket("wss://relay.shugur.net");
-ws.onopen = () => {
-  console.log("Connected to Shugur Relay");
-};
-```
+## Key Features
 
-## Getting Help
+- **High Performance**: Optimized for speed and efficiency
+- **Robust Infrastructure**: Built to handle enterprise-scale workloads
+- **Comprehensive API**: Full feature set with detailed documentation
+- **Community Driven**: Open source with active community support
 
-- 📖 [Getting Started Guide](./getting-started)
-- 🔧 [Self-Hosting Instructions](./self-hosting) 
-- 📊 [Live Status Page](https://status.relay.shugur.net)
-- 💬 [GitHub Issues](https://github.com/Shugur-Network/relay/issues)
+## Quick Links
+
+- [Getting Started](./getting-started) - Set up and configure your first relay
+- [Endpoints](./endpoints) - Complete API reference
+- [Rate Limits](./rate-limits) - Understanding usage limits
+- [Self Hosting](./self-hosting) - Deploy your own instance
+
+## Need Help?
+
+Visit our [GitHub repository](https://github.com/Shugur-Network/relay) for source code, issues, and community discussions.

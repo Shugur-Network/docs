@@ -18,19 +18,36 @@ const sidebars = {
     'getting-started',
     {
       type: 'category',
-      label: 'Reference',
+      label: 'Installation',
       collapsed: false,
       items: [
-        'endpoints',
-        'supported-nips',
-        'rate-limits',
-        'policies',
+        'installation/installation',
+        'installation/quick-start',
+        'installation/docker-standalone',
+        'installation/docker-distributed',
       ],
     },
-    'self-hosting',
-    'reliability',
-    'roadmap',
-    'changelog',
+    'bare-metal',
+    'configuration',
+    {
+      type: 'category',
+      label: 'Core Concepts',
+      collapsed: false,
+      items: [
+        'concepts',
+        'architecture',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Operations',
+      collapsed: false,
+      items: [
+        'performance',
+        'troubleshooting',
+      ],
+    },
+    'api',
   ],
 };
 

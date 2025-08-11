@@ -1,32 +1,53 @@
-# Shugur Relay Documentation
+# Shugur Documentation Hub
 
-Documentation site for Shugur Relay at [docs.relay.shugur.net](https://docs.relay.shugur.net)
+This is the centralized documentation website for all Shugur projects, built with [Docusaurus](https://docusaurus.io/).
 
-## Tech Stack
+## Website Structure
 
-- Docusaurus 3
-- React
-- Markdown/MDX
-- Deployed to docs.relay.shugur.net
+- **Homepage**: `docs.shugur.com` - Landing page with project tiles
+- **Relay Documentation**: `docs.shugur.com/relay/` - Shugur Relay documentation
+- **Future Projects**: Additional project docs will be added as new routes
 
-## Development
+## Local Development
 
 ```bash
 npm install
 npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the site.
+This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
 
-## Building
+## Build
 
 ```bash
 npm run build
 ```
 
-This generates static content into the `build` directory.
+This command generates static content into the `build` directory and can be served using any static contents hosting service.
 
-## Content Structure
+## Project Structure
+
+```
+├── docs/                  # Relay documentation markdown files
+├── src/
+│   ├── pages/
+│   │   ├── index.js      # Main landing page with project tiles
+│   │   └── index.module.css
+│   └── css/
+│       └── custom.css    # Global styles
+├── static/               # Static assets
+└── docusaurus.config.js  # Site configuration
+```
+
+## Adding New Projects
+
+To add a new project to the documentation hub:
+
+1. Add a new tile to the `ProjectTiles` array in `src/pages/index.js`
+2. Configure the new documentation route in `docusaurus.config.js`
+3. Add the documentation files in a new subdirectory
+
+## Content Structure (Relay)
 
 ```
 docs/
@@ -44,19 +65,4 @@ docs/
 
 ## Deployment
 
-This site deploys automatically to docs.relay.shugur.net when changes are pushed to main.
-
-## Contributing
-
-1. Edit documentation files in `docs/`
-2. Test locally with `npm start`
-3. Submit pull request
-4. Changes deploy automatically after merge
-
-## Writing Guidelines
-
-- Use clear, concise language
-- Include code examples where relevant
-- Keep technical accuracy high
-- Update version-specific information regularly
-- Use consistent formatting and style
+The site is configured to deploy to `docs.shugur.com` and serves as the central hub for all Shugur project documentation.

@@ -4,66 +4,75 @@ sidebar_position: 2
 
 # Getting Started
 
-## Connect
+This guide covers the prerequisites for installing Shugur Relay. Ensure your system meets these requirements before proceeding with the installation.
 
-```javascript
-const ws = new WebSocket("wss://relay.shugur.net");
-ws.onopen = () => ws.send(JSON.stringify(["REQ", "sub-1", { kinds: [1], limit: 1 }]));
-ws.onmessage = (e) => console.log(e.data);
+## System Requirements
+
+These are the minimum requirements to run Shugur Relay. Production environments may require more resources based on usage.
+
+> **💡 Tip**: For production deployments, we recommend doubling these minimum requirements for better performance and reliability.
+
+| Resource  | Standalone          | Distributed (per node) |
+| :-------- | :------------------ | :--------------------- |
+| **CPU**   | 2 Cores (minimum)   | 4 Cores (minimum)      |
+| **RAM**   | 4 GB (minimum)      | 8 GB (minimum)         |
+| **Storage** | 20 GB SSD (minimum) | 50 GB SSD (minimum)    |
+
+## Software Prerequisites
+
+### For Docker Installations (Recommended)
+
+- **Docker**: Version `20.10` or newer.
+- **Docker Compose**: Version `2.0` or newer.
+
+You can install both with a single command on most Linux systems:
+
+```bash
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
 ```
 
-## Publish an Event
+### For Bare Metal Installations
 
-```javascript
-const note = [
-  "EVENT",
-  {
-    kind: 1,
-    created_at: Math.floor(Date.now()/1000),
-    tags: [],
-    content: "hello from Shugur Relay",
-    pubkey: "<hex pubkey>",
-    id: "<event id>",
-    sig: "<signature>"
-  }
-];
-ws.send(JSON.stringify(note));
+- **Go**: Version `1.24` or newer.
+- **CockroachDB**: Version `v24.1.x`.
+- **Git**, **Curl**, **Wget**, **OpenSSL**.
+
+## Network Requirements
+
+The following ports must be accessible on your server(s).
+
+| Port    | Protocol | Description                               | Required For      |
+| :------ | :------- | :---------------------------------------- | :---------------- |
+| `80/443`  | TCP      | HTTP/HTTPS for Caddy reverse proxy        | All               |
+| `8080`  | TCP      | Shugur Relay WebSocket and API            | All               |
+| `8181`  | TCP      | Prometheus metrics endpoint               | All               |
+| `9090`  | TCP      | CockroachDB Admin UI                      | All               |
+| `26257` | TCP      | CockroachDB SQL client connections        | All               |
+| `26258` | TCP      | CockroachDB inter-node communication      | Distributed Only  |
+| `22`    | TCP      | SSH for installation script               | Distributed Only  |
+
+### Firewall Configuration Example (UFW)
+
+```bash
+# For Standalone
+sudo ufw allow 22,80,443,8080,8181,9090,26257/tcp
+
+# For Distributed (run on each node)
+sudo ufw allow 22,80,443,8080,8181,9090,26257,26258/tcp
+
+sudo ufw enable
 ```
 
-## Subscribe to Events
+## Next Steps
 
-```javascript
-// Subscribe to recent text notes
-const subscription = [
-  "REQ", 
-  "my-subscription-id",
-  {
-    kinds: [1],
-    limit: 10
-  }
-];
-ws.send(JSON.stringify(subscription));
-```
+Now that you have reviewed the prerequisites, you are ready to install Shugur Relay.
 
-## Close Subscription
+➡️ **Proceed to the [Installation Guide](./installation/installation)**
 
-```javascript
-const close = ["CLOSE", "my-subscription-id"];
-ws.send(JSON.stringify(close));
-```
+## Related Documentation
 
-## Libraries & Tools
-
-### JavaScript/TypeScript
-- [nostr-tools](https://github.com/nbd-wtf/nostr-tools) - Complete Nostr library
-- [nostr-relay-pool](https://github.com/adamritter/nostr-relay-pool) - Connection pool
-
-### Python
-- [python-nostr](https://github.com/jeffthibault/python-nostr) - Python client
-
-### Go
-- [go-nostr](https://github.com/nbd-wtf/go-nostr) - Go implementation
-
-:::tip
-See **Reference → Endpoints** for full message formats and protocol details.
-:::
+- **[Installation Guide](./installation/installation)**: Choose your installation method
+- **[Configuration Guide](./configuration)**: Configure your relay after installation
+- **[Architecture Overview](./architecture)**: Understand how the system works
+- **[Troubleshooting](./troubleshooting)**: Common issues and solutions
