@@ -9,12 +9,14 @@ This section provides detailed instructions for all supported installation metho
 ## Installation Methods Overview
 
 ### 🚀 Quick Start (Recommended for Most Users)
+
 - **[Quick Start](./quick-start)**: Use the automated script for a fast setup
 - **Best for**: Users who want to get up and running quickly with minimal configuration
 - **Time**: 5-10 minutes
 - **Difficulty**: Easy
 
 ### 🐳 Docker Installations
+
 - **[Docker Standalone](./docker-standalone)**: Manual setup for a single-node Docker deployment
 - **[Docker Distributed](./docker-distributed)**: Manual setup for a multi-node, high-availability Docker deployment
 - **Best for**: Users familiar with Docker who want containerized deployments
@@ -22,6 +24,7 @@ This section provides detailed instructions for all supported installation metho
 - **Difficulty**: Medium
 
 ### ⚙️ Bare Metal Installation
+
 - **[Bare Metal Installation](../bare-metal)**: Advanced installation directly on servers without Docker
 - **Best for**: Users who need maximum performance, control, or can't use Docker
 - **Time**: 45-90 minutes
@@ -30,21 +33,25 @@ This section provides detailed instructions for all supported installation metho
 ## Choosing Your Installation Method
 
 ### For Development & Testing
+
 - **Quick Start** or **Docker Standalone**
 - Single server setup
 - Minimal resource requirements
 
 ### For Small Production
+
 - **Docker Standalone** or **Bare Metal**
 - Single server with backup strategy
 - Moderate traffic handling
 
 ### For Production & High Availability
+
 - **Docker Distributed** or **Bare Metal**
 - Multiple servers for redundancy
 - High traffic and reliability requirements
 
 ### For Maximum Performance
+
 - **Bare Metal Installation**
 - Direct hardware access
 - Custom optimization capabilities

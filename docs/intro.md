@@ -4,35 +4,37 @@ slug: /intro
 title: Shugur Relay Documentation
 ---
 
-Shugur Relay is a reliable, developer-friendly Nostr relay designed to provide robust and scalable infrastructure for the Nostr ecosystem.
+# Welcome to Shugur Relay Documentation
 
-## What is Shugur Relay?
+Shugur Relay is a production-ready Nostr relay built in Go with CockroachDB for distributed storage. It's designed for operators who need reliability, observability, and horizontal scale.
 
-Shugur Relay is a high-performance Nostr relay implementation that focuses on:
+This documentation provides all the information you need to understand, deploy, and operate Shugur Relay.
 
-- **Reliability**: Built with stability and uptime as core priorities
-- **Developer Experience**: Clean APIs and comprehensive documentation
-- **Scalability**: Designed to handle high throughput and large user bases
-- **Standards Compliance**: Full support for Nostr protocol specifications
+## Table of Contents
 
-## Getting Started
+### 1. Getting Started
 
-Ready to start using Shugur Relay? Check out our [Getting Started Guide](./getting-started) to begin your journey.
+- **[Getting Started](./getting-started)**: Start here for prerequisites and system requirements.
 
-## Key Features
+### 2. Installation
 
-- **High Performance**: Optimized for speed and efficiency
-- **Robust Infrastructure**: Built to handle enterprise-scale workloads
-- **Comprehensive API**: Full feature set with detailed documentation
-- **Community Driven**: Open source with active community support
+- **[Installation Guide](./installation/installation)**: Detailed instructions for all supported installation methods.
+- **[Bare Metal Installation](./bare-metal)**: Advanced installation directly on servers without Docker.
 
-## Quick Links
+### 3. Configuration
 
-- [Getting Started](./getting-started) - Set up and configure your first relay
-- [Endpoints](./endpoints) - Complete API reference
-- [Rate Limits](./rate-limits) - Understanding usage limits
-- [Self Hosting](./self-hosting) - Deploy your own instance
+- **[Configuration Guide](./configuration)**: Complete reference for all configuration parameters.
 
-## Need Help?
+### 4. Core Concepts
 
-Visit our [GitHub repository](https://github.com/Shugur-Network/relay) for source code, issues, and community discussions.
+- **[Architecture](./architecture)**: Understand the components and stateless design of Shugur Relay.
+- **[Nostr Concepts](./concepts)**: Overview of the Nostr protocol and relay operation principles.
+
+### 5. Operations
+
+- **[Performance Guide](./performance)**: Optimization recommendations for production deployments.
+- **[Troubleshooting](./troubleshooting)**: Solutions for common issues and debugging techniques.
+
+### 6. Development
+
+- **[API Reference](./api)**: WebSocket and HTTP API documentation for developers.

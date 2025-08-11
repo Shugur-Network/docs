@@ -1,5 +1,5 @@
 ---
-sidebar_position: 9
+sidebar_position: 7
 ---
 
 # API Reference
@@ -35,6 +35,7 @@ Send an event to the relay:
 ```
 
 **Response:**
+
 ```json
 ["OK", "event_id", true, ""]
 ```
@@ -54,6 +55,7 @@ Subscribe to events:
 ```
 
 **Response:**
+
 ```json
 ["EVENT", "subscription_id", {...event_object...}]
 ["EOSE", "subscription_id"]
@@ -79,6 +81,7 @@ Get event counts (NIP-45):
 ```
 
 **Response:**
+
 ```json
 ["COUNT", "subscription_id", {"count": 42}]
 ```
@@ -88,6 +91,7 @@ Get event counts (NIP-45):
 Shugur Relay implements the following Nostr Improvement Proposals:
 
 #### Core Protocol
+
 - **NIP-01**: Basic protocol flow description
 - **NIP-02**: Contact List and Petnames
 - **NIP-03**: OpenTimestamps Attestations for Events
@@ -96,6 +100,7 @@ Shugur Relay implements the following Nostr Improvement Proposals:
 - **NIP-11**: Relay Information Document
 
 #### Enhanced Features
+
 - **NIP-15**: End of Stored Events Notice
 - **NIP-16**: Event Treatment
 - **NIP-17**: Private Direct Messages
@@ -106,6 +111,7 @@ Shugur Relay implements the following Nostr Improvement Proposals:
 - **NIP-25**: Reactions
 
 #### Advanced Features
+
 - **NIP-26**: Delegated Event Signing
 - **NIP-28**: Public Chat
 - **NIP-33**: Parameterized Replaceable Events
@@ -132,6 +138,7 @@ curl -H "Accept: application/nostr+json" https://your-relay.com/
 ```
 
 **Response:**
+
 ```json
 {
   "name": "Your Relay Name",
@@ -174,6 +181,7 @@ curl https://your-relay.com/api/stats
 ```
 
 **Response:**
+
 ```json
 {
   "name": "Your Relay",
@@ -203,6 +211,7 @@ curl https://your-relay.com/health
 ```
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -223,6 +232,7 @@ curl "https://your-relay.com/api/search?q=bitcoin&kind=1&limit=10"
 ```
 
 **Parameters:**
+
 - `q`: Search query string
 - `kind`: Event kind to search (optional)
 - `author`: Author pubkey (optional)
@@ -231,6 +241,7 @@ curl "https://your-relay.com/api/search?q=bitcoin&kind=1&limit=10"
 - `limit`: Maximum results (default: 20, max: 100)
 
 **Response:**
+
 ```json
 {
   "events": [
@@ -268,6 +279,7 @@ curl "https://your-relay.com/api/search?q=bitcoin&kind=1&limit=10"
 ```
 
 **Common HTTP Status Codes:**
+
 - `400`: Bad Request - Invalid parameters
 - `403`: Forbidden - Access denied
 - `404`: Not Found - Endpoint not found
@@ -297,6 +309,7 @@ Most endpoints are public, but some relay operators may require:
 ## Client Libraries
 
 ### JavaScript/TypeScript
+
 ```bash
 npm install nostr-tools
 ```
@@ -308,6 +321,7 @@ const relay = await Relay.connect('wss://your-relay.com');
 ```
 
 ### Python
+
 ```bash
 pip install python-nostr
 ```
@@ -319,6 +333,7 @@ relay = Relay("wss://your-relay.com")
 ```
 
 ### Go
+
 ```bash
 go get github.com/nbd-wtf/go-nostr
 ```

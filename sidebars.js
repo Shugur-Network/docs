@@ -15,6 +15,15 @@
 const sidebars = {
   tutorialSidebar: [
     'intro',
+    {
+      type: 'category',
+      label: 'Core Concepts',
+      collapsed: false,
+      items: [
+        'concepts',
+        'architecture',
+      ],
+    },
     'getting-started',
     {
       type: 'category',
@@ -29,15 +38,6 @@ const sidebars = {
     },
     'bare-metal',
     'configuration',
-    {
-      type: 'category',
-      label: 'Core Concepts',
-      collapsed: false,
-      items: [
-        'concepts',
-        'architecture',
-      ],
-    },
     {
       type: 'category',
       label: 'Operations',

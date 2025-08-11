@@ -37,6 +37,13 @@
   line-height: 1.6;
 }
 
+.heroCtas {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
 /* Projects Section */
 .projects {
   padding: 3rem 1rem;
@@ -58,12 +65,23 @@
 }
 
 /* Projects Grid Layout */
+.sectionTitle {
+  margin: 1rem auto 1rem;
+  max-width: 1200px;
+  padding: 0 0.5rem;
+  font-size: 1rem;
+  color: #6b7280;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .projectsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 2rem;
-  max-width: 600px;
-  margin: 0 auto;
+  max-width: 1200px;
+  margin: 0 auto 2rem;
 }
 
 /* Project Tile */
@@ -136,6 +154,17 @@
   margin-top: auto;
 }
 
+.cardLink {
+  text-decoration: none !important;
+  color: inherit;
+}
+
+.cardLink:hover .projectTile {
+  box-shadow: 0 10px 25px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  border-color: rgba(54, 186, 152, 0.3);
+  transform: translateY(-2px);
+}
+
 .documentationButton {
   padding: 0.625rem 1.25rem;
   font-size: 0.875rem;
@@ -183,9 +212,9 @@
   }
   
   .projectsGrid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    max-width: 100%;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  max-width: 100%;
   }
   
   .projectTile {
@@ -193,12 +222,12 @@
   }
   
   .tileContent {
-    display: block;
+  display: block;
   }
   
   .tileText {
-    text-align: left;
-    margin-bottom: 1.5rem;
+  text-align: left;
+  margin-bottom: 1.5rem;
   }
   
   .titleRow {
@@ -214,6 +243,6 @@
   }
   
   .tileActions {
-    justify-content: flex-start;
+  justify-content: flex-start;
   }
 }
