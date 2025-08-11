@@ -1,0 +1,32 @@
+---
+slug: /troubleshooting
+title: Troubleshooting Guide
+head: []
+---
+
+# Troubleshooting Guide
+
+This guide helps resolve common issues when deploying and operating Shugur Relay.
+
+## Common Issues
+
+Start by checking logs and validating your configuration.
+
+- Relay won't start: Check service status and logs
+- Database connection problems: Verify CockroachDB is running and TLS certs
+- High memory usage: Reduce cache sizes and tune Go memory limits
+- Poor performance: See Performance Guide
+- WebSocket issues: Test with wscat and adjust connection limits
+
+## Docker-Specific Issues
+
+- Container won't start: Check docker logs
+- Database connectivity in Docker: Test DNS and network between containers
+- Volume permissions: Ensure correct ownership inside containers
+
+## Monitoring and Alerting
+
+- Health endpoints: /api/stats and CockroachDB /health
+- Log analysis: Grep errors and parse JSON logs
+
+See the full Troubleshooting doc for commands and details.

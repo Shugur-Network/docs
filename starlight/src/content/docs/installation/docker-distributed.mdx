@@ -1,0 +1,42 @@
+---
+slug: /installation/docker-distributed
+title: "Manual Installation: Docker Distributed"
+head: []
+---
+
+# Manual Installation: Docker Distributed
+
+Three phases: generate certs locally, per-node setup, cluster bootstrap.
+
+## 1) Generate Certificates (local)
+
+```bash
+mkdir -p shugur-certs/safe-dir && cd shugur-certs
+cockroach cert create-ca --certs-dir=. --ca-key=./ca.key
+cockroach cert create-node localhost <node1_ip> <node2_ip> <node3_ip> --certs-dir=. --ca-key=./ca.key
+cockroach cert create-client relay --certs-dir=. --ca-key=./ca.key
+cockroach cert create-client root --certs-dir=. --ca-key=./ca.key
+```
+
+## 2) Per-Node Setup
+
+```bash
+ssh user@<server_ip>
+mkdir -p ~/shugur-relay/{certs,config,data/cockroach}
+cd ~/shugur-relay
+scp ~/shugur-certs/*.{crt,key} user@<server_ip>:~/shugur-relay/certs/
+
+curl -O https://github.com/Shugur-Network/relay/raw/main/docker/compose/docker-compose.distributed.yml
+curl -O https://github.com/Shugur-Network/relay/raw/main/config/production.yaml
+mv production.yaml config.yaml
+```
+
+## 3) Cluster Bootstrap
+
+```bash
+docker-compose -f docker-compose.distributed.yml up -d cockroach
+# Wait, then initialize
+/docker exec -it shugur-cockroach cockroach init --certs-dir=/cockroach/certs --host=localhost:26257
+# Start other nodes' cockroach, then all services
+docker-compose -f docker-compose.distributed.yml up -d
+```

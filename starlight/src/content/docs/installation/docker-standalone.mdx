@@ -1,0 +1,18 @@
+---
+slug: /installation/docker-standalone
+title: "Manual Installation: Docker Standalone"
+head: []
+---
+
+# Manual Installation: Docker Standalone
+
+Prepare server, download compose and config, customize, then start services.
+
+```bash
+mkdir ~/shugur-relay && cd ~/shugur-relay
+curl -O https://github.com/Shugur-Network/relay/raw/main/docker/compose/docker-compose.standalone.yml
+curl -O https://github.com/Shugur-Network/relay/raw/main/config/development.yaml
+mv development.yaml config.yaml
+
+docker-compose -f docker-compose.standalone.yml up -d
+```

@@ -1,0 +1,104 @@
+---
+import config from 'virtual:starlight/user-config';
+
+// Props shape mirrors Starlight's default Head.astro
+const { entry, lang, siteTitle } = Astro.props as any;
+const { data } = entry;
+
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefined;
+const description = data.description || config.description;
+
+// Simple head merging without relying on internal utils
+function mergeHeadElements(defaults: any[], global: any[] = [], page: any[] = []) {
+  // Start with defaults, then add global config, then page-specific
+  const allElements = [...defaults, ...global, ...page];
+  
+  // Simple deduplication by key attributes
+  const seen = new Set();
+  return allElements.filter(element => {
+    if (!element || !element.tag) return false;
+    
+    // Create a key based on tag and key attributes
+    let key = element.tag;
+    if (element.attrs) {
+      if (element.attrs.name) key += `[name="${element.attrs.name}"]`;
+      if (element.attrs.property) key += `[property="${element.attrs.property}"]`;
+      if (element.attrs.rel) key += `[rel="${element.attrs.rel}"]`;
+    }
+    
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+// Minimal, robust defaults for the <head>
+const headDefaults = [
+  { tag: 'meta', attrs: { charset: 'utf-8' } },
+  { tag: 'meta', attrs: { name: 'viewport', content: 'width=device-width, initial-scale=1' } },
+  { tag: 'title', content: `${data.title} ${config.titleDelimiter || '|'} ${siteTitle}` },
+  { tag: 'meta', attrs: { name: 'generator', content: Astro.generator } },
+];
+
+// Add canonical if available
+if (canonical) {
+  headDefaults.push({ tag: 'link', attrs: { rel: 'canonical', href: canonical.href } });
+}
+
+// Add description if available
+if (description) {
+  headDefaults.push({ tag: 'meta', attrs: { name: 'description', content: description } });
+}
+
+// Add favicon if configured
+if (config.favicon) {
+  headDefaults.push({
+    tag: 'link',
+    attrs: {
+      rel: 'shortcut icon',
+      href: typeof config.favicon === 'string' ? config.favicon : config.favicon.href,
+      type: typeof config.favicon === 'object' ? config.favicon.type : undefined,
+    },
+  });
+}
+
+// OpenGraph meta tags
+if (data.title) {
+  headDefaults.push({ tag: 'meta', attrs: { property: 'og:title', content: data.title } });
+}
+if (canonical) {
+  headDefaults.push({ tag: 'meta', attrs: { property: 'og:url', content: canonical.href } });
+}
+if (description) {
+  headDefaults.push({ tag: 'meta', attrs: { property: 'og:description', content: description } });
+}
+if (siteTitle) {
+  headDefaults.push({ tag: 'meta', attrs: { property: 'og:site_name', content: siteTitle } });
+}
+
+headDefaults.push({ tag: 'meta', attrs: { property: 'og:type', content: 'article' } });
+headDefaults.push({ tag: 'meta', attrs: { property: 'og:locale', content: lang } });
+
+// Twitter meta tags
+headDefaults.push({ tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } });
+if (data.title) {
+  headDefaults.push({ tag: 'meta', attrs: { name: 'twitter:title', content: data.title } });
+}
+if (description) {
+  headDefaults.push({ tag: 'meta', attrs: { name: 'twitter:description', content: description } });
+}
+
+// Guard against undefined per-page head configs to avoid runtime errors.
+const head = mergeHeadElements(
+  headDefaults,
+  (config as any).head ?? [],
+  (data as any).head ?? []
+);
+---
+
+{head.map(({ tag: Tag, attrs, content }) => {
+  if (Tag === 'title') {
+    return <title>{content}</title>;
+  }
+  return <Tag {...attrs} set:html={content} />;
+})}

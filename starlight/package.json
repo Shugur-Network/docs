@@ -1,0 +1,16 @@
+{
+  "name": "shugur-relay-starlight",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview --host"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.24.1",
+    "astro": "^4.10.2",
+    "sass": "^1.77.0"
+  }
+}

@@ -1,0 +1,323 @@
+---
+slug: /performance
+title: Performance Guide
+head: []
+---
+
+# Performance Guide
+
+This guide provides recommendations for optimizing Shugur Relay performance in production environments.
+
+## Capacity Planning
+
+### Hardware Recommendations
+
+#### Standalone Deployment
+
+| Load Level | CPU | RAM | Storage | Network |
+|------------|-----|-----|---------|---------|
+| **Light** (< 1K events/day) | 2 cores | 4 GB | 50 GB SSD | 100 Mbps |
+| **Medium** (< 100K events/day) | 4 cores | 8 GB | 200 GB SSD | 1 Gbps |
+| **Heavy** (< 1M events/day) | 8 cores | 16 GB | 500 GB NVMe | 10 Gbps |
+| **Enterprise** (> 1M events/day) | 16+ cores | 32+ GB | 1+ TB NVMe | 10+ Gbps |
+
+#### Distributed Deployment (per node)
+
+| Component | CPU | RAM | Storage | Notes |
+|-----------|-----|-----|---------|-------|
+| **Relay Node** | 4-8 cores | 8-16 GB | 50 GB SSD | Stateless, can scale horizontally |
+| **Database Node** | 8-16 cores | 16-64 GB | 500 GB+ NVMe | Storage grows with data retention |
+| **Load Balancer** | 2-4 cores | 4-8 GB | 20 GB SSD | Nginx/HAProxy/Caddy |
+
+### Network Requirements
+
+- **Latency**: < 10ms between database nodes
+- **Bandwidth**: 100 Mbps minimum per 1000 concurrent connections
+- **IPv6**: Recommended for global accessibility
+
+## Configuration Optimization
+
+### Relay Configuration
+
+```yaml
+RELAY:
+  EVENT_CACHE_SIZE: 50000          # Increase for better read performance
+  SEND_BUFFER_SIZE: 16384          # Larger buffer for high-throughput
+  WRITE_TIMEOUT: 30s               # Adjust based on network conditions
+  THROTTLING:
+    MAX_CONNECTIONS: 5000          # Scale based on server capacity
+    MAX_CONTENT_LENGTH: 16384      # Allow larger events if needed
+    RATE_LIMIT:
+      MAX_EVENTS_PER_SECOND: 20    # Balance spam protection vs. usability
+      MAX_REQUESTS_PER_SECOND: 50  # Allow more requests for active users
+      BURST_SIZE: 10               # Allow bursts for normal usage patterns
+```
+
+### Database Optimization
+
+#### CockroachDB Settings
+
+```sql
+-- Increase cache sizes for better performance
+SET CLUSTER SETTING kv.snapshot_rebalance.max_rate = '128MiB';
+SET CLUSTER SETTING kv.snapshot_recovery.max_rate = '128MiB';
+SET CLUSTER SETTING sql.stats.histogram_collection.enabled = true;
+
+-- Optimize for write-heavy workloads
+SET CLUSTER SETTING kv.range_merge.queue_interval = '50ms';
+SET CLUSTER SETTING kv.raft.command.max_size = '64MiB';
+```
+
+#### Storage Layout
+
+```sql
+-- Optimize table storage for events
+ALTER TABLE shugur.events CONFIGURE ZONE USING
+  range_min_bytes = 134217728,  -- 128MB
+  range_max_bytes = 536870912,  -- 512MB
+  gc.ttlseconds = 604800;       -- 7 days GC
+
+-- Separate hot and cold data
+CREATE TABLE shugur.events_archive AS 
+SELECT * FROM shugur.events WHERE created_at < extract(epoch from now() - interval '30 days');
+```
+
+## Operating System Optimization
+
+### Linux Kernel Parameters
+
+```bash
+# /etc/sysctl.conf
+net.core.somaxconn = 65536
+net.core.netdev_max_backlog = 5000
+net.ipv4.tcp_max_syn_backlog = 65536
+net.ipv4.tcp_fin_timeout = 30
+net.ipv4.tcp_keepalive_time = 120
+net.ipv4.tcp_keepalive_probes = 3
+net.ipv4.tcp_keepalive_intvl = 15
+net.ipv4.tcp_rmem = 4096 87380 6291456
+net.ipv4.tcp_wmem = 4096 65536 4194304
+vm.max_map_count = 262144
+```
+
+### System Limits
+
+```bash
+# /etc/security/limits.conf
+* soft nofile 1000000
+* hard nofile 1000000
+* soft nproc 1000000
+* hard nproc 1000000
+
+# /etc/systemd/system.conf
+DefaultLimitNOFILE=1000000
+DefaultLimitNPROC=1000000
+```
+
+### CPU Optimization
+
+```bash
+# Set CPU governor to performance
+echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+
+# Disable CPU frequency scaling
+systemctl disable cpufreq
+
+# NUMA optimization (if applicable)
+echo never > /sys/kernel/mm/transparent_hugepage/enabled
+```
+
+## Monitoring and Metrics
+
+### Key Metrics to Monitor
+
+#### Relay Metrics
+- **Connection Count**: Current active WebSocket connections
+- **Event Rate**: Events processed per second
+- **Response Time**: Average response time for queries
+- **Error Rate**: HTTP/WebSocket error rates
+- **Memory Usage**: Go heap and system memory usage
+
+#### Database Metrics
+- **Query Latency**: P50, P95, P99 query response times
+- **Throughput**: Queries per second (QPS)
+- **Connection Pool**: Active/idle database connections
+- **Disk I/O**: Read/write IOPS and throughput
+- **Replication Lag**: For distributed deployments
+
+#### System Metrics
+- **CPU Usage**: Per-core utilization
+- **Memory Usage**: Available vs. used memory
+- **Disk Usage**: Space and I/O utilization
+- **Network**: Bandwidth and packet rates
+
+### Prometheus Configuration
+
+```yaml
+# prometheus.yml
+scrape_configs:
+  - job_name: 'shugur-relay'
+    static_configs:
+      - targets: ['localhost:2112']  # Relay metrics port
+    scrape_interval: 15s
+    
+  - job_name: 'cockroachdb'
+    static_configs:
+      - targets: ['localhost:8080']  # CockroachDB metrics port
+    scrape_interval: 30s
+```
+
+### Grafana Dashboards
+
+Create dashboards for:
+- **Relay Overview**: Connections, events, performance
+- **Database Health**: Query performance, storage, replication
+- **System Resources**: CPU, memory, disk, network
+- **Alert Summary**: Current alerts and system status
+
+## Load Testing
+
+### Test Setup
+
+```bash
+# Install bombardier for load testing
+go install github.com/codesenberg/bombardier@latest
+
+# Test WebSocket connections
+bombardier -c 100 -d 60s -l ws://localhost:8080
+
+# Test HTTP endpoints
+bombardier -c 50 -d 30s -l http://localhost:8080/api/stats
+```
+
+### Benchmark Results
+
+Expected performance on recommended hardware:
+
+| Metric | Standalone | Distributed (3-node) |
+|--------|------------|---------------------|
+| **Concurrent Connections** | 1,000-5,000 | 10,000-50,000 |
+| **Events/Second** | 500-2,000 | 5,000-20,000 |
+| **Query Latency (P95)** | < 10ms | < 5ms |
+| **Memory Usage** | 512MB-2GB | 1GB-4GB per node |
+
+## Scaling Strategies
+
+### Vertical Scaling
+- **CPU**: Add more cores for better concurrent processing
+- **Memory**: Increase RAM for larger caches and buffers
+- **Storage**: Use faster NVMe drives for better I/O performance
+
+### Horizontal Scaling
+- **Relay Nodes**: Add more stateless relay instances behind a load balancer
+- **Database Nodes**: Scale CockroachDB cluster for better distribution
+- **Geographic Distribution**: Deploy relay nodes in multiple regions
+
+### Caching Strategies
+- **Event Cache**: Configure larger `EVENT_CACHE_SIZE` for frequently accessed events
+- **CDN**: Use a CDN for static assets and NIP-11 documents
+- **Redis**: Consider external Redis for session management in distributed setups
+
+## Troubleshooting Performance Issues
+
+### High CPU Usage
+
+```bash
+# Check process CPU usage
+top -p $(pgrep shugur-relay)
+
+# Profile CPU usage
+go tool pprof http://localhost:6060/debug/pprof/profile?seconds=30
+
+# Check system load
+vmstat 1 10
+iostat -x 1 10
+```
+
+### High Memory Usage
+
+```bash
+# Check memory usage
+free -h
+ps aux | grep shugur-relay
+
+# Profile memory usage
+go tool pprof http://localhost:6060/debug/pprof/heap
+
+# Check for memory leaks
+valgrind --tool=memcheck --leak-check=full ./shugur-relay
+```
+
+### Slow Database Queries
+
+```sql
+-- Check slow queries in CockroachDB
+SELECT query, count, avg_latency, max_latency 
+FROM crdb_internal.statement_statistics 
+WHERE avg_latency > interval '100ms'
+ORDER BY avg_latency DESC;
+
+-- Check table statistics
+SHOW STATISTICS FOR TABLE events;
+
+-- Analyze query plans
+EXPLAIN (ANALYZE, VERBOSE) SELECT * FROM events WHERE pubkey = $1;
+```
+
+### Network Issues
+
+```bash
+# Check network connectivity
+ping -c 5 database-server
+telnet database-server 26257
+
+# Monitor network traffic
+netstat -i
+iftop -i eth0
+
+# Check DNS resolution
+dig relay.example.com
+nslookup database-server
+```
+
+## Best Practices
+
+### Security
+- **Rate Limiting**: Configure appropriate limits to prevent abuse
+- **Monitoring**: Set up alerts for unusual activity patterns
+- **Updates**: Keep software and dependencies up to date
+- **Backups**: Regular database backups and disaster recovery testing
+
+### Reliability
+- **Health Checks**: Implement comprehensive health monitoring
+- **Circuit Breakers**: Handle database connection failures gracefully
+- **Graceful Shutdown**: Ensure clean shutdown procedures
+- **Rolling Updates**: Deploy updates without downtime
+
+### Operational
+- **Documentation**: Maintain runbooks for common operations
+- **Automation**: Automate routine maintenance tasks
+- **Testing**: Regular performance and disaster recovery testing
+- **Capacity Planning**: Monitor trends and plan for growth
+
+## Next Steps
+
+### For High-Load Deployments
+1. **Implement Caching**: Add Redis or Memcached for session/event caching
+2. **Database Sharding**: Consider partitioning strategies for very large datasets
+3. **CDN Integration**: Use CloudFlare or similar for global content distribution
+4. **Multi-Region**: Deploy across multiple geographic regions
+
+### For Enterprise Deployments
+1. **High Availability**: Implement full redundancy and automated failover
+2. **Disaster Recovery**: Regular backups and cross-region replication
+3. **Compliance**: Implement audit logging and data retention policies
+4. **Support**: Establish monitoring, alerting, and incident response procedures
+
+## Related Documentation
+
+- **[Installation Guide](./installation/installation)**: Choose your deployment method
+- **[Architecture Overview](./architecture)**: Understand the system design
+- **[Configuration Guide](./configuration)**: Configure your relay settings
+- **[Troubleshooting Guide](./troubleshooting)**: Resolve performance issues
+- **[API Reference](./api)**: WebSocket and HTTP endpoint documentation
