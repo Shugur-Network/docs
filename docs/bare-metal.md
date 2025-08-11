@@ -164,7 +164,7 @@ DATABASE:
 
 RELAY:
   NAME: "shugur-relay"
-  DESCRIPTION: "High-performance, reliable, scalable Nostr relay"
+  DESCRIPTION: "High-performance, reliable, and scalable Nostr relay"
   CONTACT: "admin@example.com"
   ICON: "https://avatars.githubusercontent.com/u/198367099?s=400&u=2bc76d4fe6f57a1c39ef00fd784dd0bf85d79bda&v=4"
   BANNER: "https://github.com/Shugur-Network/relay/raw/main/banner.png"

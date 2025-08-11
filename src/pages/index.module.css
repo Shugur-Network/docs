@@ -1,7 +1,20 @@
 /* Hero Section */
 .hero {
-  background-color: var(--ifm-background-color);
+  background-color: #FAFAFA;
   padding: 4rem 0 2rem 0;
+}
+
+/* Ensure consistent background for the entire page */
+:global(body) {
+  background-color: #FAFAFA !important;
+}
+
+:global(.main-wrapper) {
+  background-color: #FAFAFA;
+}
+
+:global(footer) {
+  background-color: #FAFAFA !important;
 }
 
 .heroContent {
@@ -24,10 +37,33 @@
   line-height: 1.6;
 }
 
-/* Features Section */
-.features {
+/* Projects Section */
+.projects {
   padding: 3rem 1rem;
   background-color: #FAFAFA;
+}
+
+/* Intro Content within Projects Section */
+.introContent {
+  max-width: 800px;
+  margin: 0 auto 3rem auto;
+  text-align: center;
+}
+
+.introText {
+  font-size: 1.1rem;
+  color: var(--ifm-color-emphasis-700);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Projects Grid Layout */
+.projectsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 /* Project Tile */
@@ -36,11 +72,13 @@
   border: 1px solid #e5e7eb;
   border-radius: 1rem;
   padding: 2rem;
-  margin: 0 auto;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
-  max-width: 700px;
   width: 100%;
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .projectTile:hover {
@@ -50,14 +88,11 @@
 }
 
 .tileContent {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
+  display: block;
 }
 
 .tileText {
-  flex: 1;
+  text-align: left;
 }
 
 .titleRow {
@@ -97,7 +132,8 @@
 
 .tileActions {
   display: flex;
-  align-items: center;
+  justify-content: flex-start;
+  margin-top: auto;
 }
 
 .documentationButton {
@@ -124,6 +160,10 @@
 
 /* Responsive Design */
 @media screen and (max-width: 996px) {
+  .heroContent {
+    text-align: center;
+  }
+  
   .heroContent h1 {
     font-size: 2.5rem;
   }
@@ -133,24 +173,36 @@
     padding: 0 1rem;
   }
   
-  .features {
+  .introText {
+    text-align: center;
+    padding: 0 1rem;
+  }
+  
+  .projects {
     padding: 2rem 0.5rem;
+  }
+  
+  .projectsGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    max-width: 100%;
   }
   
   .projectTile {
     padding: 1.5rem;
-    margin: 0 auto;
-    max-width: none;
   }
   
   .tileContent {
-    flex-direction: column;
-    text-align: center;
-    gap: 1.5rem;
+    display: block;
+  }
+  
+  .tileText {
+    text-align: left;
+    margin-bottom: 1.5rem;
   }
   
   .titleRow {
-    justify-content: center;
+    justify-content: flex-start;
   }
   
   .tileText h1 {
@@ -159,5 +211,9 @@
   
   .tileText p {
     font-size: 0.875rem;
+  }
+  
+  .tileActions {
+    justify-content: flex-start;
   }
 }

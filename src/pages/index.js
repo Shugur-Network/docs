@@ -17,35 +17,56 @@ export default function Home() {
             <div className={styles.heroContent}>
               <h1>Documentation</h1>
               <p>
-                Comprehensive guides and API references to help you integrate and deploy 
-                Shugur's infrastructure solutions.
+                Find user guides, quickstarts, tutorials, and more.
               </p>
             </div>
           </div>
         </section>
-        <section className={styles.features}>
+        <section className={styles.projects}>
           <div className="container">
-            <div className="row">
-              <div className={clsx('col col--8 col--offset-2')}>
-                <div className={styles.projectTile}>
-                  <div className={styles.tileContent}>
-                    <div className={styles.tileText}>
-                      <div className={styles.titleRow}>
-                        <h1>Shugur Relay</h1>
-                        <span className={styles.statusBadge}>Live</span>
-                      </div>
-                      <p>High-performance, reliable, scalable Nostr relay</p>
+            <div className={styles.introContent}>
+              <p className={styles.introText}>
+                Learn about Shugur products, find guidance, and explore resources
+              </p>
+            </div>
+            <div className={styles.projectsGrid}>
+              <div className={styles.projectTile}>
+                <div className={styles.tileContent}>
+                  <div className={styles.tileText}>
+                    <div className={styles.titleRow}>
+                      <h1>Shugur Relay</h1>
                     </div>
-                    <div className={styles.tileActions}>
-                      <Link
-                        className={clsx('button', styles.documentationButton)}
-                        to="/intro">
-                        View Documentation
-                      </Link>
-                    </div>
+                    <p>Learn more about Shugur Relay features the high performance reliable and scalable Nostr relay.</p>
                   </div>
                 </div>
+                <div className={styles.tileActions}>
+                  <Link
+                    className={clsx('button', styles.documentationButton)}
+                    to="/intro">
+                    View Documentation
+                  </Link>
+                </div>
               </div>
+              {/* 
+              Example for adding more project tiles:
+              <div className={styles.projectTile}>
+                <div className={styles.tileContent}>
+                  <div className={styles.tileText}>
+                    <div className={styles.titleRow}>
+                      <h1>Project Name</h1>
+                    </div>
+                    <p>Project description goes here.</p>
+                  </div>
+                </div>
+                <div className={styles.tileActions}>
+                  <Link
+                    className={clsx('button', styles.documentationButton)}
+                    to="/project-link">
+                    View Documentation
+                  </Link>
+                </div>
+              </div>
+              */}
             </div>
           </div>
         </section>
