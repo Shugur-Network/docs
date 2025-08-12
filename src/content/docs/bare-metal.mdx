@@ -178,7 +178,7 @@ EOF
 ```bash
 sudo tee /etc/systemd/system/shugur-relay.service > /dev/null <<EOF
 [Unit]
-Description=Shugur Relay - Nostr Relay
+Description=Shugur Relay - Nostr relay
 After=network.target cockroachdb.service
 Requires=cockroachdb.service
 

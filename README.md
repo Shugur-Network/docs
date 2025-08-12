@@ -4,7 +4,7 @@ This is the official documentation website for Shugur Relay, built with [Astro S
 
 ## About Shugur Relay
 
-Shugur Relay is a production-ready Nostr relay built in Go with CockroachDB for distributed storage. It's designed for operators who need reliability, observability, and horizontal scale.
+Shugur Relay is a enterprise grade Nostr relay built in Go with CockroachDB for distributed storage. It's designed for operators who need reliability, observability, and horizontal scale.
 
 ## Local Development
 

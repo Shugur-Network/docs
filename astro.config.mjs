@@ -19,7 +19,6 @@ export default defineConfig({
       head: [],
       components: {
         Head: './src/components/Head.astro',
-        SiteTitle: './src/components/SiteTitle.astro',
       },
       logo: {
         src: logoUrl,
