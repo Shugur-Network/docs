@@ -4,6 +4,9 @@ import logoUrl from './src/assets/shugur-logo.svg?url';
 
 export default defineConfig({
   output: 'static',
+  build: {
+    assets: '_astro'
+  },
   integrations: [
     starlight({
       title: 'Shugur',
