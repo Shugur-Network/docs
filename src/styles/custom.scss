@@ -308,3 +308,36 @@ a[href*="github.com"] svg.astro-c6vsoqas {
   transform: scale(1.50) !important;
   transform-origin: center !important;
 }
+
+/* Logo sizing for the full logo */
+.site-title img {
+  height: 80px !important;
+  width: auto !important;
+  max-width: 400px !important;
+}
+
+/* Mobile responsive logo sizing */
+@media (max-width: 768px) {
+  .site-title img {
+    height: 64px !important;
+    max-width: 320px !important;
+  }
+}
+
+/* Import League Spartan font */
+@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap');
+
+/* Hero title styling with League Spartan font */
+.hero h1,
+.hero .sl-title {
+  font-family: "League Spartan", sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* Hero tagline styling */
+.hero .tagline,
+.hero p {
+  font-family: "League Spartan", sans-serif !important;
+  font-weight: 400 !important;
+}
