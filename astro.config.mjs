@@ -8,9 +8,6 @@ export default defineConfig({
   build: {
     assets: '_astro'
   },
-  redirects: {
-    '/': '/intro'
-  },
   integrations: [
     starlight({
       title: '',
@@ -32,7 +29,7 @@ export default defineConfig({
         {
           label: 'Introduction',
           items: [
-            { label: 'Welcome', link: '/intro' }
+            { label: 'Welcome', link: '/' }
           ]
         },
         {
