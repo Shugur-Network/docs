@@ -4,10 +4,6 @@ import logoUrl from './src/assets/shugur-logo.svg?url';
 
 export default defineConfig({
   output: 'static',
-  // Ensure the site root redirects to the docs welcome page during dev and build
-  redirects: {
-    '/': '/intro'
-  },
   integrations: [
     starlight({
       title: 'Shugur',

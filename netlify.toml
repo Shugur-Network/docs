@@ -5,14 +5,8 @@
 [build.environment]
   NODE_VERSION = "18"
 
-# Handle client-side routing for SPA-like behavior
+# Handle all routes through the main index.html for SPA-like behavior
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-# Specific redirect for root to intro page
-[[redirects]]
-  from = "/"
-  to = "/intro"
-  status = 302
