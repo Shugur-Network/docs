@@ -66,3 +66,245 @@ body {
 .hero-image {
   max-width: 200px;
 }
+
+/* Get Started button styling - use variant color */
+.hero .action.primary,
+.sl-link-button[data-variant="primary"] {
+  background-color: #36BA98 !important;
+  border-color: #36BA98 !important;
+  color: white !important;
+}
+
+.hero .action.primary:hover,
+.sl-link-button[data-variant="primary"]:hover {
+  background-color: #2a8066 !important;
+  border-color: #2a8066 !important;
+  color: white !important;
+}
+
+/* Ensure all primary buttons use the brand color */
+.sl-link-button--primary {
+  background-color: #36BA98 !important;
+  border-color: #36BA98 !important;
+  color: white !important;
+}
+
+.sl-link-button--primary:hover {
+  background-color: #2a8066 !important;
+  border-color: #2a8066 !important;
+}
+
+/* Document content styling - use teal color for links and interactive elements */
+.sl-markdown-content a,
+.sl-markdown-content a:link,
+.sl-markdown-content a:visited {
+  color: #36BA98 !important;
+}
+
+.sl-markdown-content a:hover {
+  color: #2a8066 !important;
+}
+
+/* Card links in the intro page */
+.card a,
+.card-grid a {
+  color: #36BA98 !important;
+}
+
+.card a:hover,
+.card-grid a:hover {
+  color: #2a8066 !important;
+}
+
+/* Navigation links in content */
+.content a,
+.content-panel a,
+main a {
+  color: #36BA98 !important;
+}
+
+.content a:hover,
+.content-panel a:hover,
+main a:hover {
+  color: #2a8066 !important;
+}
+
+/* Ensure all document links use teal */
+article a,
+.sl-container a {
+  color: #36BA98 !important;
+}
+
+article a:hover,
+.sl-container a:hover {
+  color: #2a8066 !important;
+}
+
+/* Indicators and accent elements - use teal color */
+/* Sidebar active/current page indicator */
+.sl-sidebar a[aria-current="page"],
+.sl-sidebar a.current,
+.sidebar-content a[aria-current="page"] {
+  color: #36BA98 !important;
+  border-left: 3px solid #36BA98 !important;
+  background-color: rgba(54, 186, 152, 0.1) !important;
+}
+
+/* Navigation highlights and active states */
+.sl-nav-link--current,
+.sl-nav-link[aria-current="page"] {
+  color: #36BA98 !important;
+}
+
+/* Table of contents - custom color states */
+.sl-toc a,
+.right-sidebar a {
+  color: #6b7280 !important; /* Light black/gray for default */
+  font-weight: normal !important;
+}
+
+.sl-toc a:hover,
+.right-sidebar a:hover {
+  color: #1a1a1a !important; /* Black on hover */
+}
+
+/* Use teal for selected/active items */
+.sl-toc a[aria-current="true"],
+.sl-toc .current,
+.right-sidebar a[aria-current="true"],
+.right-sidebar a.current {
+  color: #36BA98 !important; /* Teal when selected */
+  font-weight: 600 !important;
+}
+
+/* Breadcrumb indicators */
+.sl-breadcrumbs a {
+  color: #36BA98 !important;
+}
+
+/* Focus and selection indicators */
+:focus-visible {
+  outline: 2px solid #36BA98 !important;
+  outline-offset: 2px !important;
+}
+
+/* Checkbox and form element indicators */
+input[type="checkbox"]:checked {
+  background-color: #36BA98 !important;
+  border-color: #36BA98 !important;
+}
+
+/* Progress indicators */
+.progress-bar,
+.sl-progress {
+  background-color: #36BA98 !important;
+}
+
+/* Badge and tag indicators */
+.badge,
+.tag,
+.sl-badge {
+  background-color: #36BA98 !important;
+  color: white !important;
+}
+
+/* GitHub logo color styling - comprehensive targeting */
+.sl-social-links a[href*="github"] svg,
+.sl-social-links a[href*="github.com"] svg,
+.social-icons a[href*="github"] svg,
+.social-icons a[href*="github.com"] svg,
+a[href*="github"] svg.astro-wy4te6ga,
+a[href*="github.com"] svg.astro-wy4te6ga,
+a[href*="github"] svg.astro-c6vsoqas,
+a[href*="github.com"] svg.astro-c6vsoqas {
+  color: #36BA98 !important;
+  fill: #36BA98 !important;
+}
+
+.sl-social-links a[href*="github"]:hover svg,
+.sl-social-links a[href*="github.com"]:hover svg,
+.social-icons a[href*="github"]:hover svg,
+.social-icons a[href*="github.com"]:hover svg,
+a[href*="github"]:hover svg.astro-wy4te6ga,
+a[href*="github.com"]:hover svg.astro-wy4te6ga,
+a[href*="github"]:hover svg.astro-c6vsoqas,
+a[href*="github.com"]:hover svg.astro-c6vsoqas {
+  color: #2a8066 !important;
+  fill: #2a8066 !important;
+}
+
+/* Alternative targeting for GitHub icon */
+.sl-header .sl-social-links svg[class*="github"],
+.sl-header .sl-social-links [aria-label*="GitHub"] svg,
+.sl-header .sl-social-links [title*="GitHub"] svg,
+.sl-header .social-icons svg[class*="github"],
+.sl-header .social-icons [aria-label*="GitHub"] svg,
+.sl-header .social-icons [title*="GitHub"] svg {
+  color: #36BA98 !important;
+  fill: #36BA98 !important;
+}
+
+/* GitHub icon hover state */
+.sl-header .sl-social-links svg[class*="github"]:hover,
+.sl-header .sl-social-links [aria-label*="GitHub"]:hover svg,
+.sl-header .sl-social-links [title*="GitHub"]:hover svg,
+.sl-header .social-icons svg[class*="github"]:hover,
+.sl-header .social-icons [aria-label*="GitHub"]:hover svg,
+.sl-header .social-icons [title*="GitHub"]:hover svg {
+  color: #2a8066 !important;
+  fill: #2a8066 !important;
+}
+
+/* Most specific targeting based on actual HTML structure */
+.header .right-group .social-icons a[rel="me"] svg,
+.header .sl-flex.social-icons a[rel="me"] svg,
+a.sl-flex[rel="me"] svg.astro-wy4te6ga.astro-c6vsoqas {
+  color: #36BA98 !important;
+  fill: #36BA98 !important;
+}
+
+.header .right-group .social-icons a[rel="me"]:hover svg,
+.header .sl-flex.social-icons a[rel="me"]:hover svg,
+a.sl-flex[rel="me"]:hover svg.astro-wy4te6ga.astro-c6vsoqas {
+  color: #2a8066 !important;
+  fill: #2a8066 !important;
+}
+
+/* Remove dividers/separators near GitHub icon */
+.right-group::before,
+.right-group::after,
+.social-icons::before,
+.social-icons::after,
+.right-group .social-icons::before,
+.right-group .social-icons::after {
+  display: none !important;
+}
+
+/* Hide any border/divider elements */
+.right-group > *:not(:last-child)::after,
+.social-icons > *:not(:last-child)::after {
+  display: none !important;
+}
+
+/* Remove borders from social icons container */
+.social-icons {
+  border: none !important;
+  border-left: none !important;
+  border-right: none !important;
+}
+
+/* Remove any separators between header elements */
+.header .sl-flex > *:not(:last-child)::after {
+  display: none !important;
+}
+
+/* Increase GitHub icon size to 1.25x */
+.social-icons a[href*="github"] svg,
+.social-icons a[href*="github.com"] svg,
+a[href*="github"] svg.astro-wy4te6ga,
+a[href*="github.com"] svg.astro-wy4te6ga,
+a[href*="github"] svg.astro-c6vsoqas,
+a[href*="github.com"] svg.astro-c6vsoqas {
+  transform: scale(1.50) !important;
+  transform-origin: center !important;
+}
