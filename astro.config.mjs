@@ -3,9 +3,13 @@ import starlight from '@astrojs/starlight';
 import logoUrl from './src/assets/shugur-logo.svg?url';
 
 export default defineConfig({
+  site: 'https://docs.relay.shugur.com',
   output: 'static',
   build: {
     assets: '_astro'
+  },
+  redirects: {
+    '/': '/intro'
   },
   integrations: [
     starlight({
@@ -78,7 +82,7 @@ export default defineConfig({
         './src/styles/custom.scss'
       ],
       editLink: {
-        baseUrl: 'https://github.com/Shugur-Network/relay-docs/edit/main/starlight/src/content/docs/'
+        baseUrl: 'https://github.com/Shugur-Network/relay-docs/edit/main/src/content/docs/'
       }
     })
   ]
