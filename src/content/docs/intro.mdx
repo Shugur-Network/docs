@@ -1,31 +1,82 @@
 ---
 slug: /intro
-title: Shugur Relay Documentation
+title: Welcome to Shugur Relay
+description: Production-ready Nostr relay built for reliability, observability, and horizontal scale
 head: []
+template: splash
+hero:
+  title: Shugur Relay
+  tagline: Production-ready Nostr relay built in Go with CockroachDB for distributed storage
+  actions:
+    - text: Get Started
+      link: /getting-started
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/Shugur-Network/relay
+      icon: external
+      variant: minimal
 ---
 
-# Welcome to Shugur Relay Documentation
+import { Card, CardGrid } from '@astrojs/starlight/components';
 
-Shugur Relay is a production-ready Nostr relay built in Go with CockroachDB for distributed storage. It's designed for operators who need reliability, observability, and horizontal scale.
+## Why Shugur Relay?
 
-This documentation provides all the information you need to understand, deploy, and operate Shugur Relay.
+Shugur Relay is designed for operators who need reliability, observability, and horizontal scale in their Nostr infrastructure.
 
-## Quick Navigation
+<CardGrid>
+  <Card title="🚀 Production Ready" icon="rocket">
+    Built with Go for performance and CockroachDB for distributed storage. Battle-tested in production environments.
+  </Card>
+  <Card title="📊 Observable" icon="magnifier">
+    Comprehensive metrics, logging, and monitoring capabilities for operational excellence.
+  </Card>
+  <Card title="🔄 Scalable" icon="puzzle">
+    Horizontal scaling support with distributed architecture for growing networks.
+  </Card>
+  <Card title="⚡ High Performance" icon="lightning">
+    Optimized for high throughput and low latency Nostr event processing.
+  </Card>
+</CardGrid>
 
-### 🚀 [Getting Started](/getting-started)
-Review prerequisites and system requirements.
+## Quick Start Guide
 
-### 🧭 [Installation](/installation/installation)
-Detailed instructions for all supported installation methods.
+<CardGrid>
+  <Card title="� Core Concepts" icon="open-book">
+    Learn about Nostr fundamentals and Shugur's architecture
+    
+    [Explore Concepts →](/concepts)
+  </Card>
+  <Card title="🛠️ Installation" icon="setting">
+    Deploy using Docker, Kubernetes, or bare metal
+    
+    [Installation Guide →](/installation)
+  </Card>
+  <Card title="⚙️ Configuration" icon="setting">
+    Configure your relay for optimal performance
+    
+    [Configuration →](/configuration)
+  </Card>
+  <Card title="📈 Operations" icon="chart">
+    Performance tuning and troubleshooting
+    
+    [Operations Guide →](/performance)
+  </Card>
+</CardGrid>
 
-### ⚙️ [Configuration](/configuration)
-Configure your relay and environment.
+## Features
 
-### 🧠 [Core Concepts](/concepts)
-Learn Nostr fundamentals and architecture.
+- **Nostr NIP Compliance**: Full support for essential Nostr Improvement Proposals
+- **Distributed Storage**: CockroachDB backend for data consistency and availability
+- **Event Filtering**: Advanced filtering capabilities for efficient event retrieval
+- **Real-time WebSocket**: High-performance WebSocket connections for live updates
+- **HTTP API**: RESTful endpoints for relay management and monitoring
+- **Metrics & Monitoring**: Prometheus metrics and structured logging
+- **Docker Support**: Container-first deployment with orchestration support
 
-### 📈 [Operations](/performance)
-Performance and troubleshooting for production.
+## Community & Support
 
-### 🧪 [API Reference](/api)
-WebSocket and HTTP API documentation.
+- **GitHub**: [Shugur-Network/relay](https://github.com/Shugur-Network/relay)
+- **Documentation**: Comprehensive guides and API references
+- **Issues**: Report bugs and request features on GitHub
+
+Ready to get started? [Jump to Getting Started →](/getting-started)

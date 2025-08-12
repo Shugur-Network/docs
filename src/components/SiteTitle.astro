@@ -1,0 +1,87 @@
+---
+// Custom SiteTitle component matching original Docusaurus branding
+import type { Props } from '@astrojs/starlight/props';
+import config from 'virtual:starlight/user-config';
+
+const { locale } = Astro.props;
+// Extract title string properly
+const siteTitle = typeof config.title === 'string' ? config.title : 'Shugur';
+---
+
+<!-- Import League Spartan font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap" rel="stylesheet">
+
+<a class="site-title-wrapper" href="/">
+  <div class="logo">
+    {config.logo?.src && (
+      <img 
+        src={config.logo.src} 
+        alt={config.logo.alt || 'Logo'} 
+        class="logo-img"
+      />
+    )}
+    <div class="logo-text">
+      <span class="logo-main">{siteTitle}</span>
+    </div>
+  </div>
+</a>
+
+<style>
+  .site-title-wrapper {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .site-title-wrapper:hover {
+    text-decoration: none;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .logo-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 0px;
+    object-fit: contain;
+    background: transparent;
+  }
+
+  .logo-text {
+    display: flex;
+    align-items: center;
+  }
+
+  .logo-main {
+    font-family: "League Spartan", sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    letter-spacing: -0.02em;
+    padding-top: 0.3rem;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  /* Ensure no color change on hover - maintain branding consistency */
+  .site-title-wrapper:hover .logo-main {
+    color: #1a1a1a; /* Keep same color */
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .logo-main {
+      font-size: 1.5rem;
+    }
+    
+    .logo-img {
+      width: 28px;
+      height: 28px;
+    }
+  }
+</style>

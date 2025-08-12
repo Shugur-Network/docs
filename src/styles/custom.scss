@@ -1,8 +1,68 @@
-/* Starlight custom styles */
+/* Starlight custom styles - Light mode only */
 :root {
   --sl-color-bg: #FAFAFA;
+  
+  /* Use original Shugur brand colors - Design System */
+  --sl-hue-accent: 168; /* Teal hue for #36BA98 */
+  --sl-color-accent-low: #2a8066;
+  --sl-color-accent: #36BA98; /* Original brand color */
+  --sl-color-accent-high: #52d4aa;
+  
+  /* Override other accent variants for consistency */
+  --sl-color-accent-50: #f0fdf9;
+  --sl-color-accent-100: #d1fae5;
+  --sl-color-accent-200: #a7f3d0;
+  --sl-color-accent-300: #6ee7b7;
+  --sl-color-accent-400: #36BA98;
+  --sl-color-accent-500: #36BA98;
+  --sl-color-accent-600: #2a8066;
+  --sl-color-accent-700: #1f5f4a;
+  --sl-color-accent-800: #184e3a;
+  --sl-color-accent-900: #143e30;
+}
+
+/* Force light theme only - Remove all dark mode options */
+.sl-theme-toggle {
+  display: none !important;
+}
+
+/* Hide any color scheme selector */
+starlight-theme-select {
+  display: none !important;
+}
+
+/* Force light color scheme */
+html[data-theme="dark"] {
+  color-scheme: light !important;
+}
+
+/* Override any dark theme variables */
+html[data-theme="dark"] {
+  --sl-color-bg: #FAFAFA !important;
+  --sl-color-accent: #36BA98 !important;
+}
+
+/* Ensure body always has light background */
+body {
+  background-color: #FAFAFA !important;
+  color: #1a1a1a !important;
 }
 
 .hero {
   background: #FAFAFA;
+}
+
+/* Enhanced intro page styling */
+.sl-container {
+  max-width: 1200px;
+}
+
+/* Card styling for better visual hierarchy */
+.card-grid {
+  gap: 1.5rem;
+}
+
+/* Hero section enhancements */
+.hero-image {
+  max-width: 200px;
 }
