@@ -3,7 +3,6 @@ import starlight from '@astrojs/starlight';
 import logoUrl from './src/assets/shugur-logo.svg?url';
 
 export default defineConfig({
-  site: 'https://your-site-name.netlify.app', // Update this with your actual Netlify URL
   output: 'static',
   // Ensure the site root redirects to the docs welcome page during dev and build
   redirects: {
