@@ -9,16 +9,17 @@ export default defineConfig({
   },
   integrations: [
     starlight({
-      title: 'Shugur Relay Docs',
+      title: 'Shugur',
       favicon: '/favicon.ico',
   // Ensure head is always an array to avoid runtime errors in Starlight Head component
   head: [],
       components: {
         Head: './src/components/Head.astro',
+        SiteTitle: './src/components/SiteTitle.astro',
       },
       logo: {
         src: logoUrl,
-        alt: 'Shugur'
+        alt: 'Shugur Logo'
       },
       social: {
         github: 'https://github.com/Shugur-Network/relay'
@@ -46,10 +47,10 @@ export default defineConfig({
         {
           label: 'Installation',
           items: [
-            { label: 'Installation Guide', link: '/installation/installation' },
-            { label: 'Quick Start', link: '/installation/quick-start' },
-            { label: 'Docker Standalone', link: '/installation/docker-standalone' },
-            { label: 'Docker Distributed', link: '/installation/docker-distributed' },
+            { label: 'Installation Guide', link: '/installation' },
+            { label: 'Quick Start', link: '/quick-start' },
+            { label: 'Docker Standalone', link: '/docker-standalone' },
+            { label: 'Docker Distributed', link: '/docker-distributed' },
             { label: 'Bare Metal', link: '/bare-metal' }
           ]
         },

@@ -8,9 +8,10 @@ yarn-error.log*
 build/
 dist/
 
-# Docusaurus cache and generated files
-.docusaurus/
-.cache-loader/
+# Astro/Starlight cache and generated files
+.astro/
+starlight/.astro/
+starlight/dist/
 
 # Environment variables
 .env

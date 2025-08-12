@@ -187,6 +187,20 @@ declare module 'astro:content' {
   collection: "docs";
   data: any
 } & { render(): Render[".mdx"] };
+"docker-distributed.mdx": {
+	id: "docker-distributed.mdx";
+  slug: "/docker-distributed";
+  body: string;
+  collection: "docs";
+  data: any
+} & { render(): Render[".mdx"] };
+"docker-standalone.mdx": {
+	id: "docker-standalone.mdx";
+  slug: "/docker-standalone";
+  body: string;
+  collection: "docs";
+  data: any
+} & { render(): Render[".mdx"] };
 "getting-started.mdx": {
 	id: "getting-started.mdx";
   slug: "/getting-started";
@@ -194,30 +208,9 @@ declare module 'astro:content' {
   collection: "docs";
   data: any
 } & { render(): Render[".mdx"] };
-"installation/docker-distributed.mdx": {
-	id: "installation/docker-distributed.mdx";
-  slug: "/installation/docker-distributed";
-  body: string;
-  collection: "docs";
-  data: any
-} & { render(): Render[".mdx"] };
-"installation/docker-standalone.mdx": {
-	id: "installation/docker-standalone.mdx";
-  slug: "/installation/docker-standalone";
-  body: string;
-  collection: "docs";
-  data: any
-} & { render(): Render[".mdx"] };
-"installation/installation.mdx": {
-	id: "installation/installation.mdx";
-  slug: "/installation/installation";
-  body: string;
-  collection: "docs";
-  data: any
-} & { render(): Render[".mdx"] };
-"installation/quick-start.mdx": {
-	id: "installation/quick-start.mdx";
-  slug: "/installation/quick-start";
+"installation.mdx": {
+	id: "installation.mdx";
+  slug: "/installation";
   body: string;
   collection: "docs";
   data: any
@@ -232,6 +225,13 @@ declare module 'astro:content' {
 "performance.mdx": {
 	id: "performance.mdx";
   slug: "/performance";
+  body: string;
+  collection: "docs";
+  data: any
+} & { render(): Render[".mdx"] };
+"quick-start.mdx": {
+	id: "quick-start.mdx";
+  slug: "/quick-start";
   body: string;
   collection: "docs";
   data: any

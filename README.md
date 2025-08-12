@@ -1,68 +1,52 @@
-# Shugur Documentation Hub
+# Shugur Relay Documentation
 
-This is the centralized documentation website for all Shugur projects, built with [Docusaurus](https://docusaurus.io/).
+This is the official documentation website for Shugur Relay, built with [Astro Starlight](https://starlight.astro.build/).
 
-## Website Structure
+## About Shugur Relay
 
-- **Homepage**: `docs.shugur.com` - Landing page with project tiles
-- **Relay Documentation**: `docs.shugur.com/relay/` - Shugur Relay documentation
-- **Future Projects**: Additional project docs will be added as new routes
+Shugur Relay is a production-ready Nostr relay built in Go with CockroachDB for distributed storage. It's designed for operators who need reliability, observability, and horizontal scale.
 
 ## Local Development
 
 ```bash
+cd starlight
 npm install
-npm start
+npm run dev
 ```
 
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
+This starts the development server at `http://localhost:4321`. Most changes are reflected live without restarting the server.
 
 ## Build
 
 ```bash
+cd starlight
 npm run build
 ```
 
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
+This generates static content into the `dist/` directory for deployment.
 
 ## Project Structure
 
 ```
-├── docs/                  # Relay documentation markdown files
+starlight/
 ├── src/
-│   ├── pages/
-│   │   ├── index.js      # Main landing page with project tiles
-│   │   └── index.module.css
-│   └── css/
-│       └── custom.css    # Global styles
-├── static/               # Static assets
-└── docusaurus.config.js  # Site configuration
+│   ├── content/docs/     # Documentation markdown files
+│   ├── components/       # Custom Astro components
+│   ├── styles/           # Custom SCSS styles
+│   └── assets/           # Images and static assets
+├── astro.config.mjs      # Starlight configuration
+└── package.json          # Dependencies and scripts
 ```
 
-## Adding New Projects
+## Documentation Content
 
-To add a new project to the documentation hub:
-
-1. Add a new tile to the `ProjectTiles` array in `src/pages/index.js`
-2. Configure the new documentation route in `docusaurus.config.js`
-3. Add the documentation files in a new subdirectory
-
-## Content Structure (Relay)
-
-```
-docs/
-├── intro.md (Overview)
-├── getting-started.md (Quick start)
-├── endpoints.md (WebSocket API)
-├── supported-nips.md (NIP compatibility)
-├── rate-limits.md (Policies)
-├── policies.md (Service policies)
-├── self-hosting.md (Installation guides)
-├── reliability.md (SLO, status)
-├── roadmap.md (Future features)
-└── changelog.md (Version history)
-```
+- **Introduction**: Welcome and overview
+- **Core Concepts**: Nostr fundamentals and architecture
+- **Installation**: Deployment guides (Docker, Kubernetes, bare metal)
+- **Configuration**: Relay configuration and optimization
+- **Operations**: Performance tuning and troubleshooting
+- **API Reference**: WebSocket and HTTP API documentation
 
 ## Deployment
 
-The site is configured to deploy to `docs.shugur.com` and serves as the central hub for all Shugur project documentation.
+The site is configured for deployment to `docs.shugur.com` and serves comprehensive documentation for Shugur Relay operators and developers.
