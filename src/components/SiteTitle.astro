@@ -40,9 +40,9 @@ const { locale } = Astro.props;
   }
 
   .logo-img {
-    height: 50px; /* Reduced from 80px for better proportions */
-    width: auto;
-    max-width: 280px; /* Proportional to new logo dimensions */
+    height: 40px; /* Exact spec: Desktop height 40px */
+    width: 170px; /* Exact spec: Desktop width 170px */
+    max-width: 170px;
     object-fit: contain;
     object-position: 0 50%;
   }
@@ -50,8 +50,9 @@ const { locale } = Astro.props;
   /* Mobile responsive logo sizing */
   @media (max-width: 768px) {
     .logo-img {
-      height: 40px; /* Reduced from 64px */
-      max-width: 224px; /* Proportional scaling */
+      height: 28px; /* Exact spec: Mobile height 28px */
+      width: 120px; /* Exact spec: Mobile width 120px */
+      max-width: 120px;
     }
   }
 </style>
