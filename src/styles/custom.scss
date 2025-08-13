@@ -472,8 +472,8 @@ a[href*="github.com"] svg.astro-c6vsoqas {
   }
 }
 
-/* Import League Spartan font */
-@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap');
+/* Import League Spartan font with optimized loading */
+@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;600;700&display=swap');
 
 /* Hero title styling with League Spartan font */
 .hero h1,

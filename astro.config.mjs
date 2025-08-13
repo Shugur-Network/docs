@@ -6,8 +6,12 @@ export default defineConfig({
   site: 'https://docs.shugur.com',
   output: 'static',
   build: {
-    assets: '_astro'
+    assets: '_astro',
+    // Enable build optimizations
+    inlineStylesheets: 'auto',
   },
+  // Enable optimizations
+  compressHTML: true,
   integrations: [
     starlight({
       title: '',

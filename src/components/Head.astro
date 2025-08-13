@@ -92,6 +92,36 @@ if (description) {
   headDefaults.push({ tag: 'meta', attrs: { name: 'twitter:description', content: description } });
 }
 
+// Performance optimizations - Font preloading
+headDefaults.push({
+  tag: 'link',
+  attrs: {
+    rel: 'preconnect',
+    href: 'https://fonts.googleapis.com'
+  }
+});
+
+headDefaults.push({
+  tag: 'link',
+  attrs: {
+    rel: 'preconnect',
+    href: 'https://fonts.gstatic.com',
+    crossorigin: 'anonymous'
+  }
+});
+
+// Preload critical League Spartan font weights
+headDefaults.push({
+  tag: 'link',
+  attrs: {
+    rel: 'preload',
+    href: 'https://fonts.gstatic.com/s/leaguespartan/v11/kJEqBuEW6A0lliaV_m88ja5Twtx8BWhtkDVmjZvM_oXpBMdcFguFOw.woff2',
+    as: 'font',
+    type: 'font/woff2',
+    crossorigin: 'anonymous'
+  }
+});
+
 // Guard against undefined per-page head configs to avoid runtime errors.
 const head = mergeHeadElements(
   headDefaults,
