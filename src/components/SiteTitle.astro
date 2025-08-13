@@ -1,20 +1,18 @@
 ---
 // Custom SiteTitle component that links to shugur.com
 import type { Props } from '@astrojs/starlight/props';
-import config from 'virtual:starlight/user-config';
+import logoUrl from '../assets/shugur-logo-full.svg?url';
 
 const { locale } = Astro.props;
 ---
 
 <a href="https://shugur.com" class="site-title-wrapper">
   <div class="logo">
-    {config.logo?.src && (
-      <img 
-        src={config.logo.src} 
-        alt={config.logo.alt || 'Shugur Logo'} 
-        class="logo-img"
-      />
-    )}
+    <img 
+      src={logoUrl} 
+      alt="Shugur Logo" 
+      class="logo-img"
+    />
   </div>
 </a>
 

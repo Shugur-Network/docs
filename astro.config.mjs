@@ -3,7 +3,7 @@ import starlight from '@astrojs/starlight';
 import logoUrl from './src/assets/shugur-logo-full.svg?url';
 
 export default defineConfig({
-  site: 'https://shugur.com',
+  site: 'https://docs.shugur.com',
   output: 'static',
   build: {
     assets: '_astro'
