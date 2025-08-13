@@ -49,4 +49,4 @@ starlight/
 
 ## Deployment
 
-The site is configured for deployment to `docs.relay.shugur.com` and serves comprehensive documentation for Shugur Relay operators and developers.
+The site is configured for deployment to `docs.shugur.com` and serves comprehensive documentation for Shugur Relay operators and developers.

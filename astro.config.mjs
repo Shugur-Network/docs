@@ -3,7 +3,7 @@ import starlight from '@astrojs/starlight';
 import logoUrl from './src/assets/shugur-logo-full.svg?url';
 
 export default defineConfig({
-  site: 'https://docs.relay.shugur.com',
+  site: 'https://docs.shugur.com',
   output: 'static',
   build: {
     assets: '_astro'
@@ -16,11 +16,7 @@ export default defineConfig({
       head: [],
       components: {
         Head: './src/components/Head.astro',
-      },
-      logo: {
-        src: logoUrl,
-        alt: 'Shugur Logo',
-        href: 'https://shugur.com'
+        Logo: './src/components/CustomLogo.astro'
       },
       social: {
         github: 'https://github.com/Shugur-Network/relay'

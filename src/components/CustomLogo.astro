@@ -1,0 +1,34 @@
+---
+import { Image } from 'astro:assets';
+import logoUrl from '../assets/shugur-logo-full.svg';
+---
+
+<a href="https://shugur.com" target="_blank" rel="noopener noreferrer" class="custom-logo">
+  <Image src={logoUrl} alt="Shugur Logo - Click to go to main website" width={200} height={60} />
+  <span class="external-indicator">↗</span>
+</a>
+
+<style>
+  .custom-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+    position: relative;
+  }
+
+  .custom-logo:hover {
+    opacity: 0.8;
+  }
+
+  .external-indicator {
+    margin-left: 0.5rem;
+    font-size: 0.875rem;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+  }
+
+  .custom-logo:hover .external-indicator {
+    opacity: 1;
+  }
+</style>
