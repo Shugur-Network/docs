@@ -135,10 +135,10 @@ const head = mergeHeadElements(
   document.addEventListener('DOMContentLoaded', function() {
     // Function to enforce external logo link
     function enforceLogoLink() {
-      const logoLinks = document.querySelectorAll('.sl-logo a, .sl-nav .sl-logo a, .sl-nav a[href*="shugur.com"], .sl-nav a[href="/"]');
+      const logoLinks = document.querySelectorAll('.sl-logo a, .sl-nav .sl-logo a, .sl-nav a[href*="www.shugur.com"], .sl-nav a[href="www.shugur.com"]');
       logoLinks.forEach(link => {
         // Force the link to go to external shugur.com
-        link.href = 'https://shugur.com';
+        link.href = 'https://www.shugur.com';
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
         link.setAttribute('aria-label', 'Go to Shugur main website (opens in new tab)');
