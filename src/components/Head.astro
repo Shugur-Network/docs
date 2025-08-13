@@ -130,6 +130,18 @@ const head = mergeHeadElements(
     attributes: true,
     attributeFilter: ['data-theme']
   });
+  
+  // Ensure header logo opens in new tab and goes to external site
+  document.addEventListener('DOMContentLoaded', function() {
+    const logoLinks = document.querySelectorAll('.sl-logo a, .sl-nav .sl-logo a');
+    logoLinks.forEach(link => {
+      if (link.href && link.href.includes('shugur.com')) {
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.setAttribute('aria-label', 'Go to Shugur main website (opens in new tab)');
+      }
+    });
+  });
 </script>
 
 {head.map(({ tag: Tag, attrs, content }) => {
