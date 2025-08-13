@@ -1,30 +1,20 @@
 ---
-// Custom SiteTitle component matching original Docusaurus branding
+// Custom SiteTitle component that links to shugur.com
 import type { Props } from '@astrojs/starlight/props';
 import config from 'virtual:starlight/user-config';
 
 const { locale } = Astro.props;
-// Extract title string properly
-const siteTitle = typeof config.title === 'string' ? config.title : 'Shugur';
 ---
 
-<!-- Import League Spartan font -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap" rel="stylesheet">
-
-<a class="site-title-wrapper" href="/">
+<a href="https://shugur.com" class="site-title-wrapper">
   <div class="logo">
     {config.logo?.src && (
       <img 
         src={config.logo.src} 
-        alt={config.logo.alt || 'Logo'} 
+        alt={config.logo.alt || 'Shugur Logo'} 
         class="logo-img"
       />
     )}
-    <div class="logo-text">
-      <span class="logo-main">{siteTitle}</span>
-    </div>
   </div>
 </a>
 
@@ -32,56 +22,38 @@ const siteTitle = typeof config.title === 'string' ? config.title : 'Shugur';
   .site-title-wrapper {
     text-decoration: none;
     color: inherit;
+    display: flex;
+    align-items: center;
+    gap: var(--sl-nav-gap);
+    font-size: var(--sl-text-h4);
+    font-weight: 600;
+    color: var(--sl-color-text-accent);
+    white-space: nowrap;
   }
 
   .site-title-wrapper:hover {
     text-decoration: none;
+    opacity: 0.8;
   }
 
   .logo {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
   }
 
   .logo-img {
-    width: 32px;
-    height: 32px;
-    border-radius: 0px;
+    height: 80px;
+    width: auto;
+    max-width: 400px;
     object-fit: contain;
-    background: transparent;
+    object-position: 0 50%;
   }
 
-  .logo-text {
-    display: flex;
-    align-items: center;
-  }
-
-  .logo-main {
-    font-family: "League Spartan", sans-serif;
-    font-size: 2rem;
-    font-weight: 700;
-    color: #1a1a1a;
-    letter-spacing: -0.02em;
-    padding-top: 0.3rem;
-    margin: 0;
-    white-space: nowrap;
-  }
-
-  /* Ensure no color change on hover - maintain branding consistency */
-  .site-title-wrapper:hover .logo-main {
-    color: #1a1a1a; /* Keep same color */
-  }
-
-  /* Mobile responsiveness */
+  /* Mobile responsive logo sizing */
   @media (max-width: 768px) {
-    .logo-main {
-      font-size: 1.5rem;
-    }
-    
     .logo-img {
-      width: 28px;
-      height: 28px;
+      height: 64px;
+      max-width: 320px;
     }
   }
 </style>

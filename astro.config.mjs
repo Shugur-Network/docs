@@ -3,6 +3,7 @@ import starlight from '@astrojs/starlight';
 import logoUrl from './src/assets/shugur-logo-full.svg?url';
 
 export default defineConfig({
+  site: 'https://shugur.com',
   output: 'static',
   build: {
     assets: '_astro'
@@ -15,6 +16,7 @@ export default defineConfig({
       head: [],
       components: {
         Head: './src/components/Head.astro',
+        SiteTitle: './src/components/SiteTitle.astro',
       },
       logo: {
         src: logoUrl,
