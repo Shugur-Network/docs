@@ -461,18 +461,18 @@ a[href*="github.com"] svg.astro-c6vsoqas {
   transform-origin: center !important;
 }
 
-/* Logo sizing for the full logo */
+/* Logo sizing for the updated full logo (393x87px) */
 .site-title img {
-  height: 80px !important;
+  height: 50px !important; /* Reduced from 80px */
   width: auto !important;
-  max-width: 400px !important;
+  max-width: 280px !important; /* Proportional to the new dimensions */
 }
 
 /* Mobile responsive logo sizing */
 @media (max-width: 768px) {
   .site-title img {
-    height: 64px !important;
-    max-width: 320px !important;
+    height: 40px !important; /* Reduced from 64px */
+    max-width: 224px !important; /* Proportional scaling */
   }
 }
 

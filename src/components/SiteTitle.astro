@@ -40,9 +40,9 @@ const { locale } = Astro.props;
   }
 
   .logo-img {
-    height: 80px;
+    height: 50px; /* Reduced from 80px for better proportions */
     width: auto;
-    max-width: 400px;
+    max-width: 280px; /* Proportional to new logo dimensions */
     object-fit: contain;
     object-position: 0 50%;
   }
@@ -50,8 +50,8 @@ const { locale } = Astro.props;
   /* Mobile responsive logo sizing */
   @media (max-width: 768px) {
     .logo-img {
-      height: 64px;
-      max-width: 320px;
+      height: 40px; /* Reduced from 64px */
+      max-width: 224px; /* Proportional scaling */
     }
   }
 </style>
