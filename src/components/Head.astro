@@ -133,23 +133,55 @@ const head = mergeHeadElements(
   
   // Ensure header logo opens in new tab and goes to external site
   document.addEventListener('DOMContentLoaded', function() {
-    const logoLinks = document.querySelectorAll('.sl-logo a, .sl-nav .sl-logo a, .sl-nav a[href*="shugur.com"]');
-    logoLinks.forEach(link => {
-      if (link.href && (link.href.includes('shugur.com') || link.href.includes('docs.shugur.com'))) {
+    // Function to enforce external logo link
+    function enforceLogoLink() {
+      const logoLinks = document.querySelectorAll('.sl-logo a, .sl-nav .sl-logo a, .sl-nav a[href*="shugur.com"], .sl-nav a[href="/"]');
+      logoLinks.forEach(link => {
+        // Force the link to go to external shugur.com
         link.href = 'https://shugur.com';
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
         link.setAttribute('aria-label', 'Go to Shugur main website (opens in new tab)');
         
-        // Add external link indicator
-        if (!link.querySelector('.external-indicator')) {
-          const indicator = document.createElement('span');
-          indicator.className = 'external-indicator';
-          indicator.textContent = '↗';
-          indicator.style.cssText = 'margin-left: 0.5rem; font-size: 0.875rem; opacity: 0.7; transition: opacity 0.2s ease;';
-          link.appendChild(indicator);
+        // Remove any existing external indicators
+        const existingIndicator = link.querySelector('.external-indicator');
+        if (existingIndicator) {
+          existingIndicator.remove();
         }
-      }
+        
+        // Add external link indicator
+        const indicator = document.createElement('span');
+        indicator.className = 'external-indicator';
+        indicator.textContent = '↗';
+        indicator.style.cssText = 'margin-left: 0.5rem; font-size: 0.875rem; opacity: 0.7; transition: opacity 0.2s ease;';
+        link.appendChild(indicator);
+        
+        // Prevent any click event overrides
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.open('https://shugur.com', '_blank', 'noopener,noreferrer');
+        });
+      });
+    }
+    
+    // Run immediately
+    enforceLogoLink();
+    
+    // Run again after a short delay to catch any dynamic content
+    setTimeout(enforceLogoLink, 100);
+    
+    // Run on any DOM changes
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'childList') {
+          enforceLogoLink();
+        }
+      });
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
     });
   });
 </script>
