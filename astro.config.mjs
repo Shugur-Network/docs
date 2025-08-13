@@ -85,7 +85,7 @@ export default defineConfig({
         './src/styles/custom.scss'
       ],
       editLink: {
-        baseUrl: 'https://github.com/Shugur-Network/relay-docs/edit/main/'
+        baseUrl: 'https://github.com/Shugur-Network/docs/edit/main/'
       }
     })
   ]
