@@ -21,6 +21,103 @@
   --sl-color-accent-900: #143e30;
 }
 
+// Force light mode - disable dark mode completely
+:root {
+  color-scheme: light only;
+}
+
+// Override any dark mode variables to use light mode values
+[data-theme="dark"],
+[data-theme="system"] {
+  --sl-color-accent: #3b82f6;
+  --sl-color-accent-low: #dbeafe;
+  --sl-color-accent-high: #1e40af;
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #f9fafb;
+  --sl-color-gray-2: #f3f4f6;
+  --sl-color-gray-3: #e5e7eb;
+  --sl-color-gray-4: #d1d5db;
+  --sl-color-gray-5: #9ca3af;
+  --sl-color-gray-6: #6b7280;
+  --sl-color-gray-7: #4b5563;
+  --sl-color-gray-8: #374151;
+  --sl-color-gray-9: #1f2937;
+  --sl-color-black: #111827;
+  --sl-color-text: #111827;
+  --sl-color-text-subtle: #6b7280;
+  --sl-color-text-accent: #1e40af;
+  --sl-color-background: #ffffff;
+  --sl-color-background-subtle: #f9fafb;
+  --sl-color-background-muted: #f3f4f6;
+  --sl-color-background-accent: #dbeafe;
+  --sl-color-border: #e5e7eb;
+  --sl-color-border-subtle: #f3f4f6;
+  --sl-color-border-accent: #93c5fd;
+  --sl-color-shadow: rgba(0, 0, 0, 0.1);
+  --sl-color-shadow-subtle: rgba(0, 0, 0, 0.05);
+  --sl-color-shadow-accent: rgba(59, 130, 246, 0.1);
+}
+
+// Force light mode for all elements
+* {
+  color-scheme: light only !important;
+}
+
+// Hide the theme toggle button completely
+[data-theme-toggle] {
+  display: none !important;
+}
+
+// Ensure all backgrounds are light
+body,
+.sl-container,
+.sl-sidebar,
+.sl-nav,
+.sl-content,
+.sl-page,
+.sl-card,
+.sl-aside,
+.sl-tabs,
+.sl-steps {
+  background-color: var(--sl-color-background) !important;
+  color: var(--sl-color-text) !important;
+}
+
+// Force light mode for code blocks
+pre,
+code {
+  background-color: var(--sl-color-background-muted) !important;
+  color: var(--sl-color-text) !important;
+  border-color: var(--sl-color-border) !important;
+}
+
+// Force light mode for tables
+table {
+  background-color: var(--sl-color-background) !important;
+  color: var(--sl-color-text) !important;
+  
+  th, td {
+    background-color: var(--sl-color-background) !important;
+    color: var(--sl-color-text) !important;
+    border-color: var(--sl-color-border) !important;
+  }
+}
+
+// Force light mode for navigation
+.sl-sidebar,
+.sl-nav {
+  background-color: var(--sl-color-background) !important;
+  border-color: var(--sl-color-border) !important;
+  
+  a {
+    color: var(--sl-color-text) !important;
+    
+    &:hover {
+      background-color: var(--sl-color-background-muted) !important;
+    }
+  }
+}
+
 /* Force light theme only - Remove all dark mode options */
 .sl-theme-toggle {
   display: none !important;

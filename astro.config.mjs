@@ -19,8 +19,8 @@ export default defineConfig({
       },
       logo: {
         src: logoUrl,
-        alt: 'Shugur Logo'
-        
+        alt: 'Shugur Logo',
+        href: 'https://shugur.com'
       },
       social: {
         github: 'https://github.com/Shugur-Network/relay'

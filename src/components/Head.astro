@@ -1,9 +1,13 @@
 ---
 import config from 'virtual:starlight/user-config';
+import type { AstroGlobal } from 'astro';
 
-// Props shape mirrors Starlight's default Head.astro
-const { entry, lang, siteTitle } = Astro.props as any;
-const { data } = entry;
+interface Props {
+  entry: any;
+}
+
+const { entry } = Astro.props;
+const data = entry?.data || {};
 
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefined;
 const description = data.description || config.description;
@@ -36,7 +40,7 @@ function mergeHeadElements(defaults: any[], global: any[] = [], page: any[] = []
 const headDefaults = [
   { tag: 'meta', attrs: { charset: 'utf-8' } },
   { tag: 'meta', attrs: { name: 'viewport', content: 'width=device-width, initial-scale=1' } },
-  { tag: 'title', content: `${data.title} ${config.titleDelimiter || '|'} ${siteTitle}` },
+  { tag: 'title', content: `${data.title} ${config.titleDelimiter || '|'} ${config.title}` },
   { tag: 'meta', attrs: { name: 'generator', content: Astro.generator } },
 ];
 
@@ -72,12 +76,12 @@ if (canonical) {
 if (description) {
   headDefaults.push({ tag: 'meta', attrs: { property: 'og:description', content: description } });
 }
-if (siteTitle) {
-  headDefaults.push({ tag: 'meta', attrs: { property: 'og:site_name', content: siteTitle } });
+if (config.title) {
+  headDefaults.push({ tag: 'meta', attrs: { property: 'og:site_name', content: config.title } });
 }
 
 headDefaults.push({ tag: 'meta', attrs: { property: 'og:type', content: 'article' } });
-headDefaults.push({ tag: 'meta', attrs: { property: 'og:locale', content: lang } });
+headDefaults.push({ tag: 'meta', attrs: { property: 'og:locale', content: config.lang } });
 
 // Twitter meta tags
 headDefaults.push({ tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } });
@@ -95,6 +99,38 @@ const head = mergeHeadElements(
   (data as any).head ?? []
 );
 ---
+
+<!-- Force light mode and disable theme switching -->
+<script is:inline>
+  // Force light mode immediately
+  document.documentElement.setAttribute('data-theme', 'light');
+  document.documentElement.style.colorScheme = 'light only';
+  
+  // Remove any theme toggle elements
+  const themeToggles = document.querySelectorAll('[data-theme-toggle]');
+  themeToggles.forEach(toggle => toggle.remove());
+  
+  // Override any theme switching functions
+  if (window.__theme) {
+    window.__theme = 'light';
+  }
+  
+  // Prevent theme changes
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+        if (mutation.target.getAttribute('data-theme') !== 'light') {
+          mutation.target.setAttribute('data-theme', 'light');
+        }
+      }
+    });
+  });
+  
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme']
+  });
+</script>
 
 {head.map(({ tag: Tag, attrs, content }) => {
   if (Tag === 'title') {
