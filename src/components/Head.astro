@@ -110,12 +110,24 @@ headDefaults.push({
   }
 });
 
-// Preload critical League Spartan font weights
+// Preload critical League Spartan and Inter font weights (design system fonts)
 headDefaults.push({
   tag: 'link',
   attrs: {
     rel: 'preload',
     href: 'https://fonts.gstatic.com/s/leaguespartan/v11/kJEqBuEW6A0lliaV_m88ja5Twtx8BWhtkDVmjZvM_oXpBMdcFguFOw.woff2',
+    as: 'font',
+    type: 'font/woff2',
+    crossorigin: 'anonymous'
+  }
+});
+
+// Preload Inter font for design system body text
+headDefaults.push({
+  tag: 'link',
+  attrs: {
+    rel: 'preload',
+    href: 'https://fonts.gstatic.com/s/inter/v18/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7W0Q5n-wU.woff2',
     as: 'font',
     type: 'font/woff2',
     crossorigin: 'anonymous'
