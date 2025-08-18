@@ -4,7 +4,7 @@ description: enterprise grade Nostr relay built for reliability, observability, 
 template: splash
 hero:
   title: Shugur Relay
-  tagline: High-performance, reliable, and scalable Nostr relay for building decentralized applications.
+  tagline: HA distributed relay cluster that eliminates single points of failure. Connect once, access everywhere.
   actions:
     - text: Get Started
       link: /getting-started
@@ -18,17 +18,17 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
 ## Why Shugur Relay?
 
-Shugur Relay is designed for operators who need reliability, observability, and horizontal scale in their Nostr infrastructure.
+Shugur Relay revolutionizes Nostr infrastructure with **High Availability (HA) distributed relay clusters** - providing seamless, fault-tolerant connectivity that traditional relays can't match.
 
 <CardGrid>
-  <Card title="Enterprise Grade" icon="star">
+  <Card title="HA Distributed Cluster" icon="star">
+    Connect to one relay, access the entire cluster. Automatic failover ensures data availability even when individual relays fail.
+  </Card>
+  <Card title="Simplified Connectivity" icon="puzzle">
+    No more managing multiple relay connections. Single connection point with cluster-wide data persistence and redundancy.
+  </Card>
+  <Card title="Enterprise Grade" icon="rocket">
     Built with Go for performance and CockroachDB for distributed storage. Battle-tested in production environments.
-  </Card>
-  <Card title="Scalable" icon="puzzle">
-    Horizontal scaling support with distributed architecture for growing networks.
-  </Card>
-  <Card title="High Performance" icon="rocket">
-    Optimized for high throughput and low latency Nostr event processing.
   </Card>
 </CardGrid>
 
