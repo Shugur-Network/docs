@@ -7,7 +7,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview --host",
-    "postinstall": "npx playwright install"
+    "postinstall": "npx playwright install chromium"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.24.1",

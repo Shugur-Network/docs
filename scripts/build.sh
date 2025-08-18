@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-echo "Installing Playwright browsers..."
-npx playwright install --with-deps chromium
-
+# Playwright browsers are already installed via the postinstall script in package.json
+# This avoids the need to install system dependencies during the build process
+echo "Playwright browsers already installed via postinstall script"
 echo "Building Astro site..."
 npm run build
 
