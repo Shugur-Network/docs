@@ -1,81 +1,94 @@
 # Shugur Relay Documentation
 
-This is the official documentation website for Shugur Relay, built with [Astro Starlight](https://starlight.astro.build/).
-
-## About Shugur Relay
-
-Shugur Relay is an enterprise-grade Nostr relay built in Go with CockroachDB for distributed storage. It's designed for operators who need reliability, observability, and horizontal scale.
-
-## Local Development
-
-```bash
-npm install
-npm run dev
-```
-
-This starts the development server at `http://localhost:4321`. Most changes are reflected live without restarting the server.
-
-## Build
-
-```bash
-npm run build
-```
-
-This generates static content into the `dist/` directory for deployment.
-
-## Preview
-
-```bash
-npm run preview
-```
-
-Preview the built site locally before deployment.
-
-## Project Structure
-
-```text
-/
-├── src/
-│   ├── content/
-│   │   ├── docs/         # Documentation markdown files
-│   │   └── i18n/         # Internationalization config
-│   ├── components/       # Custom Astro components
-│   ├── styles/           # Custom SCSS styles
-│   └── assets/           # Images and static assets
-├── design-system/        # Shugur design system tokens
-├── public/               # Static assets
-├── astro.config.mjs      # Starlight configuration
-└── package.json          # Dependencies and scripts
-```
-
-## Documentation Content
-
-- **Getting Started**: Quick start guide and introduction
-- **Installation**: Deployment guides (Docker standalone/distributed, bare metal)
-- **Configuration**: Relay configuration and optimization
-- **Architecture**: System design and core concepts
-- **Performance**: Tuning and monitoring guides
-- **Troubleshooting**: Common issues and solutions
-- **API Reference**: WebSocket and HTTP API documentation
+This repository contains the documentation for Shugur Relay, built with [Astro](https://astro.build) and [Starlight](https://starlight.astro.build).
 
 ## Features
 
-- **Optimized Performance**: Lighthouse-optimized with font preloading and build optimizations
-- **Design System Integration**: Uses Shugur design system with consistent branding
-- **Responsive Design**: Mobile-first responsive layout
-- **Edit Links**: Direct GitHub integration for community contributions
-- **Search**: Built-in documentation search functionality
+- **Mermaid Diagrams**: Interactive diagrams rendered using Playwright and rehype-mermaid
+- **Responsive Design**: Mobile-first documentation with Starlight theme
+- **Search**: Full-text search powered by Pagefind
+- **Dark/Light Mode**: Automatic theme switching
 
-## Contributing
+## Development
 
-This documentation is open source. You can contribute by:
+### Prerequisites
 
-1. Editing pages directly via the "Edit page" links
-2. Opening issues for content improvements
-3. Submitting pull requests for new documentation
+- Node.js 18+ (specified in `.nvmrc`)
+- npm or yarn
 
-Edit links point to: `https://github.com/Shugur-Network/docs/edit/main/`
+### Local Development
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+   
+   This will automatically install Playwright browsers via the postinstall script.
+
+2. **Start development server:**
+   ```bash
+   npm run dev
+   ```
+   
+   The site will be available at `http://localhost:4321` (or next available port).
+
+3. **Build for production:**
+   ```bash
+   npm run build
+   ```
+
+### Mermaid Diagrams
+
+The documentation uses Mermaid diagrams that are rendered at build time using Playwright. The setup includes:
+
+- **rehype-mermaid**: Astro plugin for Mermaid rendering
+- **Playwright**: Browser automation for diagram rendering
+- **Automatic Installation**: Browsers are installed via postinstall script
 
 ## Deployment
 
-The site is deployed to production and serves comprehensive documentation for Shugur Relay operators and developers.
+### Netlify
+
+The site is configured for Netlify deployment with:
+
+- **Custom Build Script**: `scripts/build.sh` handles the build process
+- **Playwright Integration**: Browsers are installed during dependency installation
+- **Optimized Build**: Only Chromium browser is installed to reduce build time
+
+### Build Process
+
+1. **Dependencies**: npm installs packages and Playwright browsers
+2. **Build Script**: `./scripts/build.sh` runs the Astro build
+3. **Output**: Static files are generated in the `dist/` directory
+
+## Configuration Files
+
+- **`netlify.toml`**: Netlify deployment configuration
+- **`astro.config.mjs`**: Astro configuration with Mermaid plugin
+- **`package.json`**: Dependencies and build scripts
+- **`.nvmrc`**: Node.js version specification
+- **`.npmrc`**: NPM configuration for Playwright
+
+## Troubleshooting
+
+### Build Issues
+
+- **Playwright Browsers**: Ensure browsers are installed via `npx playwright install chromium`
+- **Node Version**: Use Node.js 18+ as specified in `.nvmrc`
+- **Dependencies**: Clear `node_modules` and reinstall if needed
+
+### Local Development
+
+- **Port Conflicts**: If port 4321 is in use, Astro will automatically use the next available port
+- **File Watching**: The dev server automatically reloads when files change
+
+## Contributing
+
+1. Make changes to the `.mdx` files in `src/content/docs/`
+2. Test locally with `npm run dev`
+3. Ensure the build passes with `npm run build`
+4. Commit and push changes
+
+## License
+
+This documentation is part of the Shugur Relay project.
