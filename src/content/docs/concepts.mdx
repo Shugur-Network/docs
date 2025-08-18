@@ -17,11 +17,13 @@ Think of traditional social media platforms like Twitter or Facebook.
   - Single Point of Failure: If the company's servers go down, the entire platform is offline.
     - Data Control: The company owns your data and can sell it, analyze it, or lose it in a data breach.
 
-```text
-+-----------------+      +-------------------------+      +-----------------+
-|      User A     |----->|   Centralized Server    |<-----|      User B     |
-| (Account Data)  |<-----| (Company Controls Data) |----->| (Account Data)  |
-+-----------------+      +-------------------------+      +-----------------+
+```mermaid
+graph LR
+    A[User A<br/>Account Data] <--> S[Centralized Server<br/>Company Controls Data] <--> B[User B<br/>Account Data]
+    
+    style S fill:#ffcdd2
+    style A fill:#e8f5e8
+    style B fill:#e8f5e8
 ```
 
 ### 2. The Blockchain Model: Decentralized but Complex
@@ -41,12 +43,21 @@ Nostr takes a different approach: simple decentralization.
 - How it works: Your identity is based on cryptographic keys (not accounts on a platform). You publish content to relays (like Shugur), which are just servers that store and forward your messages. Clients connect to multiple relays to fetch and display content.
 - The Solution: No single point of control, no expensive blockchain transactions, users can delete or update content, and it's simple enough to build and run.
 
-```text
-+----------+     +----------------+     +----------+
-|  User A  |---->|    Relay 1     |---->|  User B  |
-|          |---->|    Relay 2     |---->|          |
-|          |---->|    Relay 3     |---->|          |
-+----------+     +----------------+     +----------+
+```mermaid
+graph LR
+    A[User A] --> R1[Relay 1]
+    A --> R2[Relay 2]
+    A --> R3[Relay 3]
+    
+    R1 --> B[User B]
+    R2 --> B
+    R3 --> B
+    
+    style A fill:#e8f5e8
+    style B fill:#e8f5e8
+    style R1 fill:#e1f5fe
+    style R2 fill:#e1f5fe
+    style R3 fill:#e1f5fe
 ```
 
 ## Key Nostr Concepts

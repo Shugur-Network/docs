@@ -1,62 +1,625 @@
 ---
 title: Architecture
+description: Comprehensive guide to Shugur Relay's technical architecture, design patterns, and implementation details.
 ---
 
-Shugur Relay is designed for high availability, scalability, and operational simplicity. This is achieved through a stateless architecture and the use of a distributed SQL database.
+This document provides a detailed overview of Shugur Relay's technical architecture, design patterns, and implementation details.
+
+## High-Level Architecture
+
+Shugur Relay is designed for high availability, scalability, and operational simplicity through a stateless, layered architecture:
+
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        WB[Web Browser<br/>Dashboard]
+        NC[Nostr Clients<br/>WebSocket]
+        MT[Monitoring Tools<br/>Prometheus]
+    end
+    
+    subgraph "Transport Layer"
+        HS[HTTP Server<br/>NIP-11, API]
+        WS[WebSocket<br/>Nostr Protocol]
+        MS[Metrics Server<br/>Prometheus]
+    end
+    
+    subgraph "Application Layer"
+        WH[Web Handler]
+        RS[Relay Server]
+        NM[Node Manager]
+        EV[Event Validation]
+        CM[Connection Management]
+        SM[Subscription Management]
+        NI[NIPs Implementation]
+        RL[Rate Limiting & Security]
+        WP[Worker Pool Management]
+    end
+    
+    subgraph "Storage Layer"
+        DO[Database Operations]
+        EP[Event Processor]
+        BF[Bloom Filter<br/>Duplicate Detection]
+    end
+    
+    subgraph "Persistence Layer"
+        DB[(CockroachDB<br/>Distributed SQL Database)]
+    end
+    
+    WB --> HS
+    NC --> WS
+    MT --> MS
+    
+    HS --> WH
+    WS --> RS
+    MS --> NM
+    
+    WH --> DO
+    RS --> EV
+    RS --> CM
+    RS --> SM
+    NM --> WP
+    
+    EV --> NI
+    EV --> RL
+    
+    DO --> EP
+    EP --> BF
+    BF --> DB
+    
+    style DB fill:#e1f5fe
+    style RS fill:#f3e5f5
+    style NC fill:#e8f5e8
+```
 
 ## Core Components
 
-```text
-                               +-------------------------+
-                               |   CockroachDB           |
-                               | (Distributed Database)  |
-                               +-----------+-------------+
-                                           ^
-                                           | SQL
-                                           v
-+----------------+      +------------------+------------------+
-|    Clients     |----->|      Shugur Relay Nodes (Stateless) |
-| (Nostr Users)  |<-----| (Go Application)                    |
-+----------------+      +------------------+------------------+
+### 1. Application Node (`internal/application/`)
+
+The central coordinator that manages all relay components.
+
+**Responsibilities:**
+- Component lifecycle management
+- Dependency injection
+- Configuration distribution
+- Graceful shutdown coordination
+
+**Key Files:**
+- `node.go` - Main node implementation
+- `node_builder.go` - Builder pattern for node construction
+- `node_utils.go` - Utility functions
+
+### 2. Relay Server (`internal/relay/`)
+
+Handles the core Nostr protocol implementation.
+
+**Responsibilities:**
+- WebSocket connection management
+- Nostr message processing
+- Event validation and storage
+- Subscription management
+
+**Key Files:**
+- `server.go` - HTTP/WebSocket server
+- `connection.go` - WebSocket connection handling
+- `subscription.go` - Subscription management
+- `event_validator.go` - Event validation logic
+
+### 3. Storage Layer (`internal/storage/`)
+
+Manages data persistence and retrieval.
+
+**Responsibilities:**
+- Database connection management
+- Event storage and retrieval
+- Query optimization
+- Bloom filter management
+
+**Key Files:**
+- `db.go` - Database connection and operations
+- `event_processor.go` - Event processing pipeline
+- `queries.go` - Database queries
+- `schema.go` - Database schema management
+
+### 4. NIPs Implementation (`internal/relay/nips/`)
+
+Implements Nostr Improvement Proposals.
+
+**Responsibilities:**
+- Protocol compliance validation
+- Event type specific processing
+- Feature-specific logic
+
+**Key Files:**
+- `nip01.go` - Basic protocol flow
+- `nip11.go` - Relay information document
+- `nip17.go` - Private direct messages
+- And many more NIP implementations...
+
+## Design Patterns
+
+### 1. Builder Pattern
+
+Used for complex object construction, particularly the Node:
+
+```go
+type NodeBuilder struct {
+    ctx     context.Context
+    cfg     *config.Config
+    privKey ed25519.PrivateKey
+    // ... other fields
+}
+
+func (b *NodeBuilder) BuildDB() error { /* ... */ }
+func (b *NodeBuilder) BuildWorkers() { /* ... */ }
+func (b *NodeBuilder) Build() *Node { /* ... */ }
 ```
 
-### Shugur Relay Nodes
+### 2. Interface Segregation
 
-- Stateless Go Application: The core relay logic is written in Go. The nodes themselves do not store any persistent state, such as event data or subscriptions. This allows them to be scaled, restarted, or replaced without data loss.
-- WebSocket Handling: Each node manages WebSocket connections from Nostr clients, handling incoming events and outgoing subscription data.
-- API & Dashboard: A web interface is served directly from the relay for administration.
+Components depend on interfaces rather than concrete implementations:
 
-### CockroachDB (Distributed Database)
+```go
+type NodeInterface interface {
+    RegisterConn(conn domain.WebSocketConnection)
+    UnregisterConn(conn domain.WebSocketConnection)
+    GetActiveConnectionCount() int64
+    // ... other methods
+}
+```
 
-- Single Source of Truth: All event data, policies, and other persistent information are stored in CockroachDB.
-- High Availability: CockroachDB is a distributed database that replicates data across multiple nodes. If one database node fails, the system remains operational.
-- Scalability: Both the relay nodes and the database can be scaled independently. If you have high traffic, you can add more relay nodes. If your data storage needs grow, you can add more CockroachDB nodes.
+### 3. Dependency Injection
 
-## Standalone vs. Distributed
+Configuration and dependencies are injected through constructors:
 
-> Architecture Tip: Choose your deployment model based on your availability requirements and operational complexity tolerance. Start simple and scale up as needed.
+```go
+func NewServer(relayCfg config.RelayConfig, node domain.NodeInterface, fullCfg *config.Config) *Server
+```
+
+### 4. Worker Pool Pattern
+
+Background task processing using worker pools:
+
+```go
+type WorkerPool struct {
+    workers chan chan Job
+    jobQueue chan Job
+    quit chan bool
+}
+```
+
+## Data Flow
+
+### Event Processing Pipeline
+
+```mermaid
+sequenceDiagram
+    participant C as Client (WebSocket)
+    participant R as Relay Server
+    participant D as Database (CockroachDB)
+    
+    C->>R: ["EVENT", event]
+    
+    Note over R: 1. Parse JSON<br/>2. Validate Signature<br/>3. Check NIPs<br/>4. Rate Limit<br/>5. Policy Check
+    
+    R->>D: Store Event
+    D-->>R: Success/Error
+    R-->>C: ["OK", id, bool, message]
+    
+    Note over R: Notify Subscribers
+```
+
+### Subscription Flow
+
+```mermaid
+sequenceDiagram
+    participant C as Client (WebSocket)
+    participant R as Relay Server  
+    participant D as Database (CockroachDB)
+    
+    C->>R: ["REQ", id, filters...]
+    
+    Note over R: 1. Validate Filters<br/>2. Check Limits<br/>3. Store Subscription
+    
+    R->>D: Query Events
+    D-->>R: Event Results
+    
+    loop For each matching event
+        R-->>C: ["EVENT", id, event]
+    end
+    
+    R-->>C: ["EOSE", id]
+```
+
+## Concurrency Model
+
+### Goroutine Usage
+
+1. **Main Server Goroutine** - HTTP server listener
+2. **Connection Goroutines** - One per WebSocket connection
+3. **Worker Pool Goroutines** - Background task processing
+4. **Metrics Goroutines** - Metrics collection and export
+5. **Database Pool Goroutines** - Connection pool management
+
+### Synchronization Mechanisms
+
+#### 1. Mutexes
+
+Used for protecting shared state:
+
+```go
+type WsConnection struct {
+    subscriptionsMu sync.RWMutex
+    subscriptions   map[string]SubscriptionInfo
+    // ...
+}
+```
+
+#### 2. Channels
+
+Used for communication between goroutines:
+
+```go
+type WorkerPool struct {
+    jobQueue chan Job
+    workers  chan chan Job
+    quit     chan bool
+}
+```
+
+#### 3. Atomic Operations
+
+Used for counters and flags:
+
+```go
+type WsConnection struct {
+    isClosed atomic.Bool
+    // ...
+}
+```
+
+## Storage Architecture
+
+### Database Schema
+
+```sql
+-- Events table (main storage)
+CREATE TABLE events (
+    id TEXT PRIMARY KEY,
+    pubkey TEXT NOT NULL,
+    created_at BIGINT NOT NULL,
+    kind INTEGER NOT NULL,
+    tags JSONB,
+    content TEXT,
+    sig TEXT NOT NULL,
+    
+    INDEX idx_events_pubkey (pubkey),
+    INDEX idx_events_kind (kind),
+    INDEX idx_events_created_at (created_at),
+    INDEX idx_events_tags (tags)
+);
+
+-- Additional indexes for performance
+CREATE INDEX idx_events_composite ON events (kind, created_at);
+CREATE INDEX idx_events_search ON events USING gin(to_tsvector('english', content));
+```
+
+### Query Optimization
+
+#### 1. Bloom Filters
+
+Used for quick duplicate detection:
+
+```go
+type DB struct {
+    Bloom *bloom.BloomFilter
+    // ...
+}
+
+// Check if event might exist
+if !db.Bloom.TestString(eventID) {
+    // Definitely new event
+    return false
+}
+```
+
+#### 2. Connection Pooling
+
+Optimized database connection management:
+
+```go
+pool, err := pgxpool.New(ctx, dbURI)
+```
+
+#### 3. Prepared Statements
+
+Cached query plans for better performance.
+
+## Security Architecture
+
+### Input Validation
+
+#### 1. Event Validation Pipeline
+
+```go
+func (ev *EventValidator) ValidateEvent(event *nostr.Event) error {
+    // 1. Structural validation
+    if err := ev.validateStructure(event); err != nil {
+        return err
+    }
+    
+    // 2. Signature verification
+    if err := ev.validateSignature(event); err != nil {
+        return err
+    }
+    
+    // 3. NIP-specific validation
+    if err := ev.validateWithNIPs(event); err != nil {
+        return err
+    }
+    
+    return nil
+}
+```
+
+#### 2. Rate Limiting
+
+Token bucket algorithm implementation:
+
+```go
+type RateLimiter struct {
+    limiters sync.Map // map[string]*rate.Limiter
+}
+
+func (rl *RateLimiter) Allow(key string) bool {
+    limiter := rl.getLimiter(key)
+    return limiter.Allow()
+}
+```
+
+### Access Control
+
+#### 1. Blacklist/Whitelist System
+
+```go
+type Node struct {
+    blacklistPubKeys map[string]struct{}
+    whitelistPubKeys map[string]struct{}
+}
+```
+
+#### 2. Progressive Banning
+
+Escalating penalties for policy violations.
+
+## Performance Optimizations
+
+### Memory Management
+
+#### 1. Object Pooling
+
+Reuse of frequently allocated objects:
+
+```go
+var eventPool = sync.Pool{
+    New: func() interface{} {
+        return &nostr.Event{}
+    },
+}
+```
+
+#### 2. Bloom Filter Usage
+
+Reduces database queries for duplicate detection.
+
+#### 3. Connection Caching
+
+WebSocket connections are kept alive and reused.
+
+### CPU Optimization
+
+#### 1. Goroutine Pool
+
+Limited number of worker goroutines to prevent resource exhaustion.
+
+#### 2. Efficient JSON Processing
+
+Optimized JSON parsing and generation.
+
+#### 3. Signature Verification Caching
+
+Cache results of expensive cryptographic operations.
+
+## Deployment Models
 
 ### Standalone Deployment
 
-- A single Shugur Relay node connects to a single-node CockroachDB instance.
-- Pros: Simple to set up and manage.
-- Cons: Not highly available. If the server or database goes down, the relay is offline.
+```mermaid
+graph TB
+    C[Clients] <--> R[Single Shugur Relay Node]
+    R <--> DB[(Single CockroachDB Instance)]
+    
+    style R fill:#f3e5f5
+    style DB fill:#e1f5fe
+    style C fill:#e8f5e8
+```
+
+- **Pros**: Simple to set up and manage
+- **Cons**: Not highly available; single point of failure
 
 ### Distributed Deployment
 
-- Multiple Shugur Relay nodes (often behind a load balancer) connect to a multi-node CockroachDB distributed database.
-- Pros: Highly available and horizontally scalable. Tolerant to node failures.
-- Cons: More complex to set up.
+```mermaid
+graph TB
+    C[Clients] <--> LB[Load Balancer]
+    LB <--> R1[Relay Node 1]
+    LB <--> R2[Relay Node 2]
+    LB <--> R3[Relay Node 3]
+    
+    R1 <--> DB1[(CockroachDB Node 1)]
+    R2 <--> DB2[(CockroachDB Node 2)]
+    R3 <--> DB3[(CockroachDB Node 3)]
+    
+    DB1 -.-> DB2
+    DB2 -.-> DB3
+    DB3 -.-> DB1
+    
+    style LB fill:#ffecb3
+    style R1 fill:#f3e5f5
+    style R2 fill:#f3e5f5
+    style R3 fill:#f3e5f5
+    style DB1 fill:#e1f5fe
+    style DB2 fill:#e1f5fe
+    style DB3 fill:#e1f5fe
+    style C fill:#e8f5e8
+```
 
-## Next Steps
+- **Pros**: Highly available and horizontally scalable; tolerant to node failures
+- **Cons**: More complex to set up and manage
 
-- Installation Guide: Now that you understand the architecture, proceed to the installation guide to deploy the relay.
-- Nostr Concepts: Learn more about the Nostr protocol itself.
+## Monitoring and Observability
+
+### Metrics Collection
+
+#### 1. Prometheus Metrics
+
+```go
+var (
+    EventsReceived = prometheus.NewCounterVec(
+        prometheus.CounterOpts{
+            Name: "relay_events_received_total",
+            Help: "Total number of events received",
+        },
+        []string{"result"},
+    )
+)
+```
+
+#### 2. Structured Logging
+
+```go
+logger.Info("Event processed",
+    zap.String("event_id", event.ID),
+    zap.String("pubkey", event.PubKey),
+    zap.Int("kind", event.Kind),
+)
+```
+
+### Health Checks
+
+#### 1. Database Health
+
+Regular database connectivity checks.
+
+#### 2. Memory Usage Monitoring
+
+Track memory usage and garbage collection.
+
+#### 3. Connection Metrics
+
+Monitor active connections and connection rates.
+
+## Error Handling
+
+### Error Classification
+
+#### 1. Validation Errors
+
+Errors in event format or content:
+
+```go
+type ValidationError struct {
+    Field   string
+    Message string
+}
+```
+
+#### 2. System Errors
+
+Infrastructure or runtime errors:
+
+```go
+type SystemError struct {
+    Component string
+    Cause     error
+}
+```
+
+### Error Recovery
+
+#### 1. Circuit Breaker Pattern
+
+Automatic fallback when dependencies fail.
+
+#### 2. Graceful Degradation
+
+Continue operating with reduced functionality.
+
+#### 3. Retry Logic
+
+Exponential backoff for transient failures.
+
+## Scalability Considerations
+
+### Horizontal Scaling
+
+#### 1. Stateless Design
+
+The relay can be horizontally scaled by running multiple instances.
+
+#### 2. Database Clustering
+
+CockroachDB provides built-in clustering capabilities.
+
+#### 3. Load Balancing
+
+WebSocket connections can be load balanced across instances.
+
+### Vertical Scaling
+
+#### 1. Resource Optimization
+
+Efficient use of CPU, memory, and network resources.
+
+#### 2. Connection Limits
+
+Configurable limits based on available resources.
+
+#### 3. Database Tuning
+
+Optimized database configuration for the workload.
+
+## Extension Points
+
+### Plugin System (Future)
+
+Architecture supports future plugin development:
+
+```go
+type Plugin interface {
+    Init(ctx context.Context, cfg PluginConfig) error
+    ProcessEvent(event *nostr.Event) error
+    Shutdown() error
+}
+```
+
+### Custom NIPs
+
+New NIP implementations can be added easily:
+
+```go
+func RegisterNIP(kind int, validator func(*nostr.Event) error) {
+    nipValidators[kind] = validator
+}
+```
+
+### Custom Storage Backends
+
+Storage layer can be extended with different backends.
 
 ## Related Documentation
 
-- Installation Guide: Choose your deployment method
-- Configuration Guide: Configure your relay settings
-- Performance Guide: Optimize for production workloads
-- Troubleshooting Guide: Resolve common issues
-- API Reference: WebSocket and HTTP endpoint documentation
+- **[NIPs Support](./nips-support)**: Comprehensive NIP implementation details
+- **[Configuration](./configuration)**: Configure your relay settings
+- **[Performance Guide](./performance)**: Optimize for production workloads
+- **[API Reference](./api)**: WebSocket and HTTP endpoint documentation
+- **[Installation Guide](./installation)**: Choose your deployment method

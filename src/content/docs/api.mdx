@@ -1,346 +1,549 @@
 ---
 title: API Reference
-description: Complete API documentation for Shugur Relay WebSocket and HTTP endpoints. Learn how to interact with the Nostr protocol and management APIs.
+description: Comprehensive API documentation for Shugur Relay WebSocket and HTTP endpoints, including Nostr protocol implementation and management APIs.
 ---
 
-Shugur Relay provides both WebSocket (Nostr protocol) and HTTP APIs for different use cases.
+This document provides a comprehensive reference for all API endpoints exposed by Shugur Relay.
+
+## Overview
+
+Shugur Relay exposes several types of APIs:
+
+1. **WebSocket API** - Core Nostr protocol implementation
+2. **HTTP REST API** - Management and monitoring endpoints
+3. **Metrics API** - Prometheus metrics endpoint
+4. **Web Dashboard** - Browser-based interface
 
 ## WebSocket API (Nostr Protocol)
 
-The primary interface for Nostr clients. Follows the Nostr protocol specification.
+The main relay functionality follows the Nostr protocol specification.
 
-### Connection
+### Endpoint
 
-```javascript
-const ws = new WebSocket('wss://your-relay.com');
+```text
+ws://localhost:8080/
+wss://relay.example.com/
 ```
 
-### Message Types
+### Protocol Overview
+
+The WebSocket API implements the Nostr protocol using JSON messages. All messages are JSON arrays where the first element is a command string.
+
+### Client to Relay Messages
 
 #### EVENT
 
-Send an event to the relay:
+Submit a new event to the relay.
 
 ```json
-["EVENT", {
-	"id": "event_id",
-	"pubkey": "public_key_hex",
-	"created_at": 1672531200,
-	"kind": 1,
-	"tags": [],
-	"content": "Hello, Nostr!",
-	"sig": "signature_hex"
-}]
+["EVENT", <event>]
 ```
 
-Response:
+**Example:**
 
 ```json
-["OK", "event_id", true, ""]
+[
+  "EVENT",
+  {
+    "id": "4376c65d2f232afbe9b882a35baa4f6fe8667c4e684749af565f981833ed6a65",
+    "pubkey": "6e468422dfb74a5738702a8823b9b28168abab8655faacb6853cd0ee15deee93",
+    "created_at": 1673347337,
+    "kind": 1,
+    "tags": [],
+    "content": "Walled gardens became prisons, and nostr is the first step towards tearing down the prison walls.",
+    "sig": "908a15e46fb4d8675bab026fc230a0e3542bfade63da02d542fb78b2a8513fcd0092619a2c8c1221e581946e0191f2af505dfdf8657a414dbca329186f009262"
+  }
+]
+```
+
+**Response:**
+
+```json
+["OK", <event_id>, <accepted>, <message>]
 ```
 
 #### REQ
 
-Subscribe to events:
+Start a subscription to receive events.
 
 ```json
-["REQ", "subscription_id", {
-	"authors": ["pubkey1", "pubkey2"],
-	"kinds": [1, 6, 7],
-	"since": 1672531200,
-	"until": 1672617600,
-	"limit": 100
-}]
+["REQ", <subscription_id>, <filters>...]
 ```
 
-Response:
+**Example:**
 
 ```json
-["EVENT", "subscription_id", {"...": "event_object"}]
-["EOSE", "subscription_id"]
+[
+  "REQ",
+  "my-subscription",
+  {
+    "authors": ["6e468422dfb74a5738702a8823b9b28168abab8655faacb6853cd0ee15deee93"],
+    "kinds": [1],
+    "limit": 10
+  }
+]
 ```
+
+**Response:** Stream of EVENT messages followed by EOSE.
 
 #### CLOSE
 
-Close a subscription:
+Close a subscription.
 
 ```json
-["CLOSE", "subscription_id"]
+["CLOSE", <subscription_id>]
 ```
 
-#### COUNT
-
-Get event counts (NIP-45):
+**Example:**
 
 ```json
-["COUNT", "subscription_id", {
-	"authors": ["pubkey1"],
-	"kinds": [1]
-}]
+["CLOSE", "my-subscription"]
 ```
 
-Response:
+#### COUNT (NIP-45)
+
+Request event count for filters.
 
 ```json
-["COUNT", "subscription_id", {"count": 42}]
+["COUNT", <subscription_id>, <filters>...]
 ```
 
-### Supported NIPs
-
-Shugur Relay implements the following Nostr Improvement Proposals:
-
-#### Core Protocol
-
-- NIP-01: Basic protocol flow description
-- NIP-02: Contact List and Petnames
-- NIP-03: OpenTimestamps Attestations for Events
-- NIP-04: Encrypted Direct Message
-- NIP-09: Event Deletion
-- NIP-11: Relay Information Document
-
-#### Enhanced Features
-
-- NIP-15: End of Stored Events Notice
-- NIP-16: Event Treatment
-- NIP-17: Private Direct Messages
-- NIP-20: Command Results
-- NIP-22: Event created_at Limits
-- NIP-23: Long-form Content
-- NIP-24: Extra metadata fields and tags
-- NIP-25: Reactions
-
-#### Advanced Features
-
-- NIP-26: Delegated Event Signing
-- NIP-28: Public Chat
-- NIP-33: Parameterized Replaceable Events
-- NIP-40: Expiration Timestamp
-- NIP-44: Encrypted Payloads (Versioned)
-- NIP-45: Counting results
-- NIP-50: Search Capability
-- NIP-59: Gift Wrap
-- NIP-65: Relay List Metadata
-- NIP-78: Application-specific data
-
-## HTTP API
-
-REST endpoints for management and monitoring.
-
-### Relay Information
-
-GET /
-
-Returns the relay information document (NIP-11):
-
-```bash
-curl -H "Accept: application/nostr+json" https://your-relay.com/
-```
-
-Response:
+**Example:**
 
 ```json
-{
-	"name": "Your Relay Name",
-	"description": "Your relay description",
-	"pubkey": "relay_pubkey_hex",
-	"contact": "admin@example.com",
-	"supported_nips": [1, 2, 4, 9, 11, 15, 16, 20, 22, 33, 40],
-	"software": "shugur-relay",
-	"version": "1.0.0",
-	"limitation": {
-		"max_message_length": 16384,
-		"max_subscriptions": 20,
-		"max_filters": 100,
-		"max_limit": 5000,
-		"max_subid_length": 100,
-		"max_event_tags": 100,
-		"max_content_length": 8192,
-		"min_pow_difficulty": 0,
-		"auth_required": false,
-		"payment_required": false,
-		"created_at_lower_limit": 946684800,
-		"created_at_upper_limit": 2147483647
-	},
-	"relay_countries": ["US"],
-	"language_tags": ["en", "en-419"],
-	"tags": ["sfw-only", "bitcoin-only"],
-	"posting_policy": "https://example.com/posting-policy.html",
-	"payments_url": "https://example.com/payments"
-}
+[
+  "COUNT",
+  "count-sub",
+  {
+    "authors": ["6e468422dfb74a5738702a8823b9b28168abab8655faacb6853cd0ee15deee93"],
+    "kinds": [1]
+  }
+]
 ```
 
-### Statistics
+**Response:**
 
-GET /api/stats
-
-Get relay statistics:
-
-```bash
-curl https://your-relay.com/api/stats
+```json
+["COUNT", <subscription_id>, {"count": <number>}]
 ```
 
-Response:
+### Relay to Client Messages
+
+#### EVENT
+
+Event matching a subscription.
+
+```json
+["EVENT", <subscription_id>, <event>]
+```
+
+#### EOSE
+
+End of stored events for a subscription.
+
+```json
+["EOSE", <subscription_id>]
+```
+
+#### CLOSED
+
+Subscription was closed by the relay.
+
+```json
+["CLOSED", <subscription_id>, <message>]
+```
+
+#### NOTICE
+
+Informational message from relay.
+
+```json
+["NOTICE", <message>]
+```
+
+#### OK
+
+Response to EVENT submission.
+
+```json
+["OK", <event_id>, <accepted>, <message>]
+```
+
+### Event Filters
+
+Filters are used in REQ and COUNT messages to specify which events to retrieve.
+
+#### Filter Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ids` | array of strings | Event IDs |
+| `authors` | array of strings | Pubkeys of event authors |
+| `kinds` | array of integers | Event kinds |
+| `#<tag>` | array of strings | Tag values (e.g., `#e`, `#p`) |
+| `since` | integer | Events after this timestamp |
+| `until` | integer | Events before this timestamp |
+| `limit` | integer | Maximum number of events |
+| `search` | string | Full-text search (NIP-50) |
+
+#### Filter Examples
+
+**Latest 10 text notes:**
 
 ```json
 {
-	"name": "Your Relay",
-	"description": "Your relay description",
-	"pubkey": "relay_pubkey_hex",
-	"contact": "admin@example.com",
-	"supported_nips": [1, 2, 4, 9, 11],
-	"software": "shugur-relay",
-	"version": "1.0.0",
-	"uptime": "72h15m30s",
-	"total_events": 150420,
-	"total_connections": 89,
-	"events_per_minute": 45,
-	"memory_usage": "156MB",
-	"database_size": "2.3GB"
+  "kinds": [1],
+  "limit": 10
 }
 ```
 
-### Health Check
-
-GET /health
-
-Simple health check endpoint:
-
-```bash
-curl https://your-relay.com/health
-```
-
-Response:
+**Events by specific author:**
 
 ```json
 {
-	"status": "healthy",
-	"timestamp": "2024-01-01T12:00:00Z",
-	"uptime": "72h15m30s",
-	"database": "connected"
+  "authors": ["pubkey_hex"],
+  "limit": 50
 }
 ```
 
-### Search
-
-GET /api/search
-
-Search events (if NIP-50 is enabled):
-
-```bash
-curl "https://your-relay.com/api/search?q=bitcoin&kind=1&limit=10"
-```
-
-Parameters:
-
-- q: Search query string
-- kind: Event kind to search (optional)
-- author: Author pubkey (optional)
-- since: Unix timestamp (optional)
-- until: Unix timestamp (optional)
-- limit: Maximum results (default: 20, max: 100)
-
-Response:
+**Events with specific tag:**
 
 ```json
 {
-	"events": [
-		{
-			"id": "event_id",
-			"pubkey": "author_pubkey",
-			"created_at": 1672531200,
-			"kind": 1,
-			"tags": [],
-			"content": "Content containing bitcoin...",
-			"sig": "signature"
-		}
-	],
-	"count": 1
+  "#p": ["referenced_pubkey"],
+  "limit": 20
 }
 ```
+
+**Search for text:**
+
+```json
+{
+  "kinds": [1],
+  "search": "nostr protocol",
+  "limit": 10
+}
+```
+
+## HTTP REST API
+
+### Relay Information (NIP-11)
+
+#### GET /
+
+Returns relay metadata when accessed with appropriate headers.
+
+**Request Headers:**
+
+```text
+Accept: application/nostr+json
+```
+
+**Response:**
+
+```json
+{
+  "name": "Shugur Relay",
+  "description": "High-performance Nostr relay",
+  "pubkey": "relay_pubkey_hex",
+  "contact": "admin@example.com",
+  "supported_nips": [1, 2, 3, 4, 9, 11, 15, 16, 17, 20, 22, 23, 24, 25, 26, 28, 33, 40, 44, 50, 59, 65, 78],
+  "software": "https://github.com/Shugur-Network/relay",
+  "version": "1.0.0",
+  "limitation": {
+    "max_message_length": 2048,
+    "max_subscriptions": 10,
+    "max_filters": 100,
+    "max_event_tags": 100,
+    "auth_required": false,
+    "payment_required": false
+  }
+}
+```
+
+### API Endpoints
+
+#### GET /api/info
+
+Returns relay information in JSON format.
+
+**Response:**
+
+```json
+{
+  "name": "Shugur Relay",
+  "description": "High-performance Nostr relay",
+  "version": "1.0.0",
+  "contact": "admin@example.com",
+  "pubkey": "relay_pubkey_hex",
+  "supported_nips": [1, 2, 3, 4, 9, 11, 15, 16, 17, 20, 22, 23, 24, 25, 26, 28, 33, 40, 44, 50, 59, 65, 78]
+}
+```
+
+#### GET /api/stats
+
+Returns current relay statistics.
+
+**Response:**
+
+```json
+{
+  "stats": {
+    "active_connections": 42,
+    "messages_processed": 1234567,
+    "events_stored": 98765
+  },
+  "uptime": "2d 5h 30m"
+}
+```
+
+#### GET /api/cluster
+
+Returns CockroachDB cluster information.
+
+**Query Parameters:**
+
+- `type=health` - Returns cluster health information
+
+**Response (cluster info):**
+
+```json
+{
+  "is_cluster": true,
+  "node_count": 3,
+  "cluster_version": "v23.1.0",
+  "nodes": [
+    {
+      "node_id": 1,
+      "address": "node1.example.com:26257",
+      "is_live": true,
+      "is_available": true
+    }
+  ]
+}
+```
+
+**Response (health check):**
+
+```json
+{
+  "healthy": true,
+  "details": {
+    "nodes_live": 3,
+    "nodes_total": 3,
+    "replication_status": "healthy"
+  }
+}
+```
+
+## Metrics API (Prometheus)
+
+### Endpoint
+
+```text
+GET http://localhost:2112/metrics
+```
+
+### Available Metrics
+
+#### Connection Metrics
+
+- `relay_active_connections` - Current number of active WebSocket connections
+- `relay_total_connections` - Total connections since start
+- `relay_connection_duration_seconds` - Connection duration histogram
+
+#### Event Metrics
+
+- `relay_events_received_total` - Total events received
+- `relay_events_stored_total` - Total events stored
+- `relay_events_rejected_total` - Total events rejected
+- `relay_event_processing_duration_seconds` - Event processing time
+
+#### Request Metrics
+
+- `relay_http_requests_total` - Total HTTP requests
+- `relay_http_request_duration_seconds` - HTTP request duration
+- `relay_websocket_messages_total` - Total WebSocket messages
+
+#### Database Metrics
+
+- `relay_db_connections_total` - Database connection status
+- `relay_db_operations_total` - Database operations by type
+- `relay_db_errors_total` - Database errors by type
+
+#### System Metrics
+
+- `relay_uptime_seconds` - Relay uptime in seconds
+- `relay_memory_usage_bytes` - Memory usage
+- `relay_goroutines_total` - Number of goroutines
+
+## Web Dashboard
+
+### Endpoint
+
+```text
+GET http://localhost:8080/
+```
+
+The web dashboard provides a browser-based interface for monitoring the relay.
+
+### Features
+
+- **Real-time Statistics** - Live connection and event counters
+- **Relay Information** - Configuration and metadata display
+- **Performance Metrics** - Charts and graphs (if enabled)
+- **Cluster Status** - CockroachDB cluster information
+- **Recent Events** - Latest events processed
 
 ## Error Responses
 
 ### WebSocket Errors
 
+#### NOTICE Messages
+
+Informational messages sent to clients:
+
 ```json
-["OK", "event_id", false, "blocked: pubkey is blacklisted"]
-["NOTICE", "Rate limited. Please slow down."]
-["CLOSED", "subscription_id", "rate-limited"]
+["NOTICE", "rate limit exceeded"]
+["NOTICE", "event rejected: invalid signature"]
+["NOTICE", "subscription limit reached"]
+["NOTICE", "connection will be closed due to policy violation"]
 ```
 
-### HTTP Errors
+#### CLOSED Messages
+
+Subscription closed by relay:
+
+```json
+["CLOSED", "subscription_id", "rate limit exceeded"]
+["CLOSED", "subscription_id", "invalid filter"]
+["CLOSED", "subscription_id", "relay overloaded"]
+```
+
+#### OK Messages (Event Rejection)
+
+```json
+["OK", "event_id", false, "invalid: signature verification failed"]
+["OK", "event_id", false, "blocked: pubkey is blacklisted"]
+["OK", "event_id", false, "rate-limited: too many events"]
+```
+
+### HTTP Error Responses
+
+#### 400 Bad Request
 
 ```json
 {
-	"error": "invalid_request",
-	"message": "Missing required parameter: q"
+  "error": "invalid request format",
+  "message": "request body must be valid JSON"
 }
 ```
 
-Common HTTP Status Codes:
+#### 429 Too Many Requests
 
-- 400: Bad Request - Invalid parameters
-- 403: Forbidden - Access denied
-- 404: Not Found - Endpoint not found
-- 429: Too Many Requests - Rate limited
-- 500: Internal Server Error - Server error
-- 503: Service Unavailable - Temporarily unavailable
+```json
+{
+  "error": "rate limit exceeded",
+  "message": "too many requests, try again later",
+  "retry_after": 60
+}
+```
+
+#### 500 Internal Server Error
+
+```json
+{
+  "error": "internal server error",
+  "message": "database connection failed"
+}
+```
 
 ## Rate Limiting
 
-All APIs are subject to rate limiting:
+### Connection Limits
 
-- WebSocket: Configurable per-connection limits
-- HTTP: Per-IP rate limiting
-- Headers: Rate limit info in response headers:
-	- X-RateLimit-Limit: Requests per window
-	- X-RateLimit-Remaining: Remaining requests
-	- X-RateLimit-Reset: Window reset time
+- Maximum concurrent connections per IP
+- Progressive banning for violations
+- Burst allowance for brief traffic spikes
 
-## Authentication
+### Request Limits
 
-Most endpoints are public, but some relay operators may require:
+- Events per second per connection
+- Requests per second per connection
+- Content length limits
 
-- NIP-42 Authentication: For protected relays
-- API Keys: For management endpoints
-- Payment: For premium features
+### Rate Limit Headers
+
+HTTP responses include rate limit information:
+
+```text
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 45
+X-RateLimit-Reset: 1640995200
+```
+
 
 ## Client Libraries
 
 ### JavaScript/TypeScript
 
-```bash
-npm install nostr-tools
-```
-
 ```javascript
-import { Relay } from 'nostr-tools';
+const relay = new WebSocket('ws://localhost:8080');
 
-const relay = await Relay.connect('wss://your-relay.com');
+// Send subscription
+relay.send(JSON.stringify([
+  "REQ",
+  "sub1",
+  {"kinds": [1], "limit": 10}
+]));
+
+// Handle messages
+relay.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  console.log('Received:', message);
+};
 ```
 
 ### Python
 
-```bash
-pip install python-nostr
-```
-
 ```python
-from nostr.relay import Relay
+import websocket
+import json
 
-relay = Relay("wss://your-relay.com")
+def on_message(ws, message):
+    data = json.loads(message)
+    print("Received:", data)
+
+ws = websocket.WebSocketApp("ws://localhost:8080",
+                           on_message=on_message)
+ws.run_forever()
 ```
 
 ### Go
 
-```bash
-go get github.com/nbd-wtf/go-nostr
-```
-
 ```go
-import "github.com/nbd-wtf/go-nostr"
+package main
 
-relay, err := nostr.RelayConnect(ctx, "wss://your-relay.com")
+import (
+    "github.com/gorilla/websocket"
+    "github.com/nbd-wtf/go-nostr"
+)
+
+func main() {
+    relay, err := nostr.RelayConnect(context.Background(), "ws://localhost:8080")
+    if err != nil {
+        panic(err)
+    }
+    
+    // Subscribe to events
+    sub := relay.Subscribe(context.Background(), nostr.Filters{
+        {Kinds: []int{1}, Limit: 10},
+    })
+    
+    for ev := range sub.Events {
+        fmt.Printf("Received event: %s\n", ev.Content)
+    }
+}
 ```
 
 ## Testing
@@ -352,7 +555,7 @@ relay, err := nostr.RelayConnect(ctx, "wss://your-relay.com")
 npm install -g wscat
 
 # Connect to relay
-wscat -c wss://your-relay.com
+wscat -c ws://localhost:8080
 
 # Send a REQ message
 ["REQ", "test", {"kinds": [1], "limit": 1}]
@@ -362,60 +565,42 @@ wscat -c wss://your-relay.com
 
 ```bash
 # Test relay info
-curl -H "Accept: application/nostr+json" https://your-relay.com/
+curl -H "Accept: application/nostr+json" http://localhost:8080/
 
 # Test statistics
-curl https://your-relay.com/api/stats
+curl http://localhost:8080/api/stats
 
-# Test health
-curl https://your-relay.com/health
+# Test cluster info
+curl http://localhost:8080/api/cluster
 ```
 
-## Examples
+## Best Practices
 
-### Publishing an Event
+### Client Implementation
 
-```javascript
-import { Relay, Event } from 'nostr-tools';
+1. **Handle reconnections** - Implement automatic reconnection logic
+2. **Respect rate limits** - Monitor rate limit headers and back off when needed
+3. **Use appropriate filters** - Limit subscriptions to reduce server load
+4. **Close unused subscriptions** - Send CLOSE messages when done
 
-const relay = await Relay.connect('wss://your-relay.com');
+### Server Integration
 
-const event = new Event({
-	kind: 1,
-	content: "Hello, Nostr!",
-	tags: [],
-	created_at: Math.floor(Date.now() / 1000)
-});
+1. **Monitor metrics** - Use Prometheus metrics for monitoring
+2. **Configure rate limits** - Set appropriate limits for your use case
+3. **Use HTTPS/WSS** - Always use TLS in production
+4. **Regular backups** - Backup your database regularly
 
-await event.sign(privateKey);
-await relay.publish(event);
-```
+### Performance Optimization
 
-### Subscribing to Events
-
-```javascript
-const sub = relay.subscribe([
-	{
-		kinds: [1],
-		authors: [pubkey],
-		since: Math.floor(Date.now() / 1000) - 3600,
-		limit: 50
-	}
-]);
-
-sub.on('event', event => {
-	console.log('Received event:', event);
-});
-
-sub.on('eose', () => {
-	console.log('End of stored events');
-});
-```
+1. **Use specific filters** - Avoid overly broad subscriptions
+2. **Limit event size** - Keep event content reasonable
+3. **Monitor connections** - Track connection patterns and adjust limits
+4. **Database tuning** - Optimize database configuration for your workload
 
 ## Related Documentation
 
-- [Installation Guide](./installation)
-- [Configuration Guide](./configuration)
-- [Performance Guide](./performance)
-- [Troubleshooting Guide](./troubleshooting)
+- **[Installation Guide](./installation)**: Choose your deployment method
+- **[Configuration Guide](./configuration)**: Configure your relay settings
+- **[NIPs Support](./nips-support)**: Comprehensive NIP implementation details
+- **[Performance Guide](./performance)**: Optimize for production workloads
 

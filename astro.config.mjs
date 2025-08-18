@@ -1,6 +1,7 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import logoUrl from './src/assets/shugur-logo-full.svg?url';
+import rehypeMermaid from 'rehype-mermaid';
 
 export default defineConfig({
   site: 'https://docs.shugur.com',
@@ -12,6 +13,9 @@ export default defineConfig({
   },
   // Enable optimizations
   compressHTML: true,
+  markdown: {
+    rehypePlugins: [rehypeMermaid],
+  },
   integrations: [
     starlight({
       title: '',
@@ -42,7 +46,8 @@ export default defineConfig({
           label: 'Core Concepts',
           items: [
             { label: 'Nostr Concepts', link: '/concepts' },
-            { label: 'Architecture', link: '/architecture' }
+            { label: 'Architecture', link: '/architecture' },
+            { label: 'NIPs Support', link: '/nips-support' }
           ]
         },
         {

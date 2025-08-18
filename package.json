@@ -10,7 +10,10 @@
   },
   "dependencies": {
     "@astrojs/starlight": "^0.24.1",
+    "@lucide/astro": "^0.539.0",
     "astro": "^4.10.2",
+    "playwright": "^1.54.2",
+    "rehype-mermaid": "^3.0.0",
     "sass": "^1.77.0"
   }
 }
