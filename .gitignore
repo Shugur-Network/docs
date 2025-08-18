@@ -4,6 +4,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Playwright browsers (installed during build)
+node_modules/playwright-core/.local-browsers/
+
 # Production build
 build/
 dist/

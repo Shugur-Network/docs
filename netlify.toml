@@ -1,9 +1,13 @@
 [build]
-  command = "npm run build"
+  # Custom build script that ensures Playwright browsers are installed before building
+  # This is required for Mermaid diagram rendering via rehype-mermaid
+  command = "./scripts/build.sh"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "18"
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "0"
+  PLAYWRIGHT_BROWSERS_PATH = "0"
 
 # Handle SPA routing - all routes go to index.html
 [[redirects]]
@@ -26,3 +30,6 @@
   for = "/*.css"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+[[plugins]]
+  package = "@netlify/plugin-lighthouse"
