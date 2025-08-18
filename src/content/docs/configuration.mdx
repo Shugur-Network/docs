@@ -1,14 +1,29 @@
 ---
-title: Configuration Parameters
-description: Complete configuration reference for Shugur Relay. Learn how to configure database, networking, logging, and performance settings via YAML or environment variables.
+title: Configuration Reference
+description: Complete configuration reference for Shugur Relay. Learn how to configure database, networking, logging, performance, and security settings via YAML, environment variables, or command line flags.
 ---
 
-Shugur Relay can be configured via a YAML file (`config.yaml`) or through environment variables.
+This document provides a comprehensive reference for configuring Shugur Relay.
 
-- YAML file: By default, the application looks for a `config.yaml` in the current directory. You can specify a different path using the `--config` flag when running the application.
-- Environment Variables: All parameters can be set using environment variables. They must be prefixed with `SHUGUR_`, and nested keys are separated by an underscore. For example, `RELAY.NAME` becomes `SHUGUR_RELAY_NAME`, and `DATABASE.SERVER` becomes `SHUGUR_DATABASE_SERVER`.
+## Configuration Sources
 
-The order of precedence is: Environment Variables > Configuration File > Defaults.
+Shugur Relay uses YAML configuration files with support for multiple configuration sources. Configuration is loaded in the following order (later sources override earlier ones):
+
+1. **Embedded defaults** - Built-in default values
+2. **Configuration file** - YAML file specified with `--config` or `config.yaml` in current directory
+3. **Environment variables** - Prefixed with `SHUGUR_` (e.g., `SHUGUR_RELAY_NAME`)
+4. **Command line flags** - CLI arguments override all other sources
+
+## Configuration File Format
+
+The configuration follows a hierarchical YAML structure with these main sections:
+
+- `GENERAL` - General application settings (reserved for future use)
+- `LOGGING` - Logging configuration
+- `METRICS` - Metrics and monitoring settings
+- `RELAY` - Core relay functionality settings
+- `RELAY_POLICY` - Access control and policy settings
+- `DATABASE` - Database connection settings
 
 ---
 
@@ -25,29 +40,51 @@ Controls the logging output of the relay.
 | MAX_BACKUPS | SHUGUR_LOGGING_MAX_BACKUPS | Maximum number of old log files to retain. | 10 |
 | MAX_AGE | SHUGUR_LOGGING_MAX_AGE | Maximum number of days to retain old log files. | 14 |
 
+### Log Levels
+
+- **debug** - Detailed debugging information
+- **info** - General information about relay operation  
+- **warn** - Warning messages for potential issues
+- **error** - Error messages for failed operations
+- **fatal** - Fatal errors that cause the relay to exit
+
+### Log Formats
+
+- **console** - Human-readable colored output (good for development)
+- **json** - Structured JSON output for log aggregation (recommended for production)
+
 ---
 
 ## METRICS
 
-Prometheus metrics collection.
+Prometheus metrics collection and monitoring.
 
 | YAML Key | Environment Variable | Description | Default |
 | :--- | :--- | :--- | :--- |
 | ENABLED | SHUGUR_METRICS_ENABLED | Whether to enable metrics collection. | true |
 | PORT | SHUGUR_METRICS_PORT | Port on which to expose metrics endpoint. | 2112 |
 
+When enabled, metrics are exposed at `http://localhost:2112/metrics` in Prometheus format for monitoring relay performance, connections, and event processing.
+
 ---
 
 ## DATABASE
 
-CockroachDB connection configuration.
+Database connection configuration. Supports both CockroachDB (recommended) and PostgreSQL.
 
 | YAML Key | Environment Variable | Description | Default |
 | :--- | :--- | :--- | :--- |
-| SERVER | SHUGUR_DATABASE_SERVER | Hostname/IP of the CockroachDB server. | localhost |
-| PORT | SHUGUR_DATABASE_PORT | Port number of the CockroachDB server. | 26257 |
+| SERVER | SHUGUR_DATABASE_SERVER | Hostname/IP of the database server. | localhost |
+| PORT | SHUGUR_DATABASE_PORT | Port number of the database server. | 26257 |
 
-For production deployments, ensure proper certificates are in place for secure connections.
+### Supported Databases
+
+- **CockroachDB** (recommended for production) - Provides distributed SQL with horizontal scaling
+- **PostgreSQL** (compatible alternative) - Traditional relational database option
+
+### Connection Details
+
+The relay automatically constructs the connection string using the server and port configuration with database name `shugur_relay` and optimized connection parameters. For production deployments, ensure proper certificates are in place for secure connections.
 
 ---
 
@@ -57,8 +94,8 @@ Core relay configuration parameters.
 
 | YAML Key | Environment Variable | Description | Default |
 | :--- | :--- | :--- | :--- |
-| NAME | SHUGUR_RELAY_NAME | The name of your relay, shown to clients. | "Shugur Relay" |
-| DESCRIPTION | SHUGUR_RELAY_DESCRIPTION | A brief description of your relay. | "A Nostr relay powered by Shugur" |
+| NAME | SHUGUR_RELAY_NAME | The name of your relay, shown to clients (max 30 chars). | "Shugur Relay" |
+| DESCRIPTION | SHUGUR_RELAY_DESCRIPTION | A brief description of your relay (max 200 chars). | "A Nostr relay powered by Shugur" |
 | CONTACT | SHUGUR_RELAY_CONTACT | Contact information for the relay operator. | "" |
 | ICON | SHUGUR_RELAY_ICON | URL to an icon image for your relay. | "" |
 | BANNER | SHUGUR_RELAY_BANNER | URL to a banner image for your relay. | "" |
@@ -67,6 +104,19 @@ Core relay configuration parameters.
 | EVENT_CACHE_SIZE | SHUGUR_RELAY_EVENT_CACHE_SIZE | Number of recent events to keep in memory cache. | 10000 |
 | SEND_BUFFER_SIZE | SHUGUR_RELAY_SEND_BUFFER_SIZE | WebSocket send buffer size in bytes. | 8192 |
 | WRITE_TIMEOUT | SHUGUR_RELAY_WRITE_TIMEOUT | Timeout for WebSocket writes. | 60s |
+| IDLE_TIMEOUT | SHUGUR_RELAY_IDLE_TIMEOUT | Connection idle timeout. | 300s |
+
+### Address Formats
+
+- `:8080` - Listen on all interfaces, port 8080
+- `localhost:8080` - Listen only on localhost
+- `192.168.1.10:8080` - Listen on specific IP address
+
+### Timeout Formats
+
+- `60s` - 60 seconds
+- `5m` - 5 minutes  
+- `1h` - 1 hour
 
 ### Throttling
 
@@ -88,6 +138,13 @@ Core relay configuration parameters.
 | THROTTLING.RATE_LIMIT.PROGRESSIVE_BAN | SHUGUR_RELAY_THROTTLING_RATE_LIMIT_PROGRESSIVE_BAN | Whether to enable progressive banning. | true |
 | THROTTLING.RATE_LIMIT.MAX_BAN_DURATION | SHUGUR_RELAY_THROTTLING_RATE_LIMIT_MAX_BAN_DURATION | Maximum ban duration. | 24h |
 
+#### Rate Limiting Behavior
+
+- **Token Bucket Algorithm**: Uses token bucket for smooth rate limiting
+- **Burst Allowance**: Allows brief bursts above the steady rate 
+- **Progressive Banning**: Ban duration increases with repeated violations
+- **IP-based**: Rate limits are applied per client IP address
+
 ---
 
 ## RELAY_POLICY
@@ -106,33 +163,244 @@ Access control and content policies.
 | :--- | :--- | :--- | :--- |
 | WHITELIST.PUBKEYS | SHUGUR_RELAY_POLICY_WHITELIST_PUBKEYS | List of allowed public keys (hex). If set, only these keys can publish. | [] |
 
-## Example Configuration
+### Access Control
+
+- **Blacklist**: Explicitly deny these pubkeys from publishing events
+- **Whitelist**: If non-empty, only allow these pubkeys to publish events
+- **Format**: Use lowercase hex format without 0x prefix
+
+Example:
 
 ```yaml
-GENERAL: {}
+RELAY_POLICY:
+  BLACKLIST:
+    PUBKEYS:
+      - "abcd1234567890abcd1234567890abcd1234567890abcd1234567890abcd1234"
+  WHITELIST:
+    PUBKEYS:
+      - "1234567890abcd1234567890abcd1234567890abcd1234567890abcd12345678"
+```
+
+## Environment Variables
+
+All configuration options can be set via environment variables using the `SHUGUR_` prefix and underscores for nested values:
+
+```bash
+# Relay configuration
+export SHUGUR_RELAY_NAME="my-relay"
+export SHUGUR_RELAY_WS_ADDR=":8080"
+export SHUGUR_RELAY_DESCRIPTION="My awesome relay"
+
+# Database configuration
+export SHUGUR_DATABASE_SERVER="db.example.com"
+export SHUGUR_DATABASE_PORT="26257"
+
+# Logging configuration
+export SHUGUR_LOGGING_LEVEL="info"
+export SHUGUR_LOGGING_FORMAT="json"
+export SHUGUR_LOGGING_FILE="/var/log/relay.log"
+
+# Metrics configuration
+export SHUGUR_METRICS_ENABLED="true"
+export SHUGUR_METRICS_PORT="2112"
+
+# Rate limiting
+export SHUGUR_RELAY_THROTTLING_RATE_LIMIT_ENABLED="true"
+export SHUGUR_RELAY_THROTTLING_RATE_LIMIT_MAX_EVENTS_PER_SECOND="100"
+```
+
+## Command Line Flags
+
+Key configuration options can be overridden via command line flags:
+
+```bash
+./bin/relay start \
+  --config /path/to/config.yaml \
+  --relay-name "My Relay" \
+  --db-host localhost \
+  --db-port 26257 \
+  --log-level info \
+  --log-format json \
+  --metrics-port 2112
+```
+
+### Available Flags
+
+- `--config, -c` - Path to configuration file
+- `--relay-name` - Relay name
+- `--db-host` - Database hostname
+- `--db-port` - Database port
+- `--log-level` - Logging level
+- `--log-file` - Log file path
+- `--log-format` - Log format
+- `--metrics-port` - Metrics server port
+
+## Configuration Examples
+
+### Development Configuration
+
+```yaml
+LOGGING:
+  LEVEL: debug
+  FORMAT: console
+
+RELAY:
+  NAME: "dev-relay"
+  WS_ADDR: ":8080"
+  THROTTLING:
+    MAX_CONNECTIONS: 100
+    RATE_LIMIT:
+      ENABLED: false
+
+DATABASE:
+  SERVER: "localhost"
+  PORT: 26257
+```
+
+### Production Configuration
+
+```yaml
 LOGGING:
   LEVEL: info
   FORMAT: json
+  FILE: "/var/log/shugur-relay/relay.log"
+  MAX_SIZE: 100
+  MAX_BACKUPS: 30
+  MAX_AGE: 30
+
 METRICS:
   ENABLED: true
   PORT: 2112
-DATABASE:
-  SERVER: localhost
-  PORT: 26257
+
 RELAY:
-  NAME: "My Nostr relay"
-  DESCRIPTION: "A community Nostr relay"
+  NAME: "production-relay"
+  DESCRIPTION: "High-performance Nostr relay"
   CONTACT: "admin@example.com"
   WS_ADDR: ":8080"
   PUBLIC_URL: "wss://relay.example.com"
   THROTTLING:
-    MAX_CONNECTIONS: 1000
+    MAX_CONNECTIONS: 10000
+    MAX_CONTENT_LENGTH: 4096
+    RATE_LIMIT:
+      ENABLED: true
+      MAX_EVENTS_PER_SECOND: 50
+      MAX_REQUESTS_PER_SECOND: 100
+      PROGRESSIVE_BAN: true
+      MAX_BAN_DURATION: 24h
+
+DATABASE:
+  SERVER: "prod-db-cluster.example.com"
+  PORT: 26257
+```
+
+### High-Security Configuration
+
+```yaml
+RELAY_POLICY:
+  WHITELIST:
+    PUBKEYS:
+      - "authorized_pubkey_1_here"
+      - "authorized_pubkey_2_here"
+
+RELAY:
+  THROTTLING:
+    MAX_CONTENT_LENGTH: 1024
+    MAX_CONNECTIONS: 500
+    BAN_THRESHOLD: 3
+    BAN_DURATION: 60
     RATE_LIMIT:
       ENABLED: true
       MAX_EVENTS_PER_SECOND: 10
-RELAY_POLICY:
-  BLACKLIST:
-    PUBKEYS: []
-  WHITELIST:
-    PUBKEYS: []
+      MAX_REQUESTS_PER_SECOND: 20
+      PROGRESSIVE_BAN: true
 ```
+
+## Configuration Validation
+
+The relay validates configuration on startup and will exit with an error if:
+
+- Required fields are missing
+- Values are outside valid ranges
+- URLs are malformed
+- Email addresses are invalid (if provided)
+- Time durations are invalid
+
+### Common Validation Errors
+
+- **Relay name too long**: Must be 30 characters or less
+- **Description too long**: Must be 200 characters or less
+- **Invalid email**: Contact must be a valid email address
+- **Invalid URL**: Icon, banner, and public URL must be valid URLs
+- **Invalid address**: WebSocket address must be in correct format
+- **Invalid timeout**: Timeouts must be positive durations
+
+## Performance Tuning
+
+### Connection Limits
+
+```yaml
+RELAY:
+  THROTTLING:
+    MAX_CONNECTIONS: 10000       # Adjust based on server capacity
+```
+
+### Memory Usage
+
+```yaml
+RELAY:
+  EVENT_CACHE_SIZE: 50000        # Increase for better performance
+  SEND_BUFFER_SIZE: 16384        # Increase for high-throughput scenarios
+```
+
+### Rate Limiting
+
+```yaml
+RELAY:
+  THROTTLING:
+    RATE_LIMIT:
+      MAX_EVENTS_PER_SECOND: 100  # Higher limits for trusted environments
+      BURST_SIZE: 50               # Allow larger bursts
+```
+
+## Security Considerations
+
+### Network Security
+
+- Use TLS/SSL in production (configure reverse proxy)
+- Consider firewall rules for database access
+- Monitor unusual traffic patterns
+
+### Access Control
+
+- Use whitelist for private relays
+- Regularly review blacklisted pubkeys
+- Monitor for abuse patterns
+
+### Logging Security
+
+- Avoid logging sensitive information
+- Secure log files with appropriate permissions
+- Consider log rotation and retention policies
+
+## Troubleshooting Configuration
+
+### Configuration Not Loading
+
+1. Check file path and permissions
+2. Validate YAML syntax
+3. Check environment variable names
+4. Review startup logs for validation errors
+
+### Performance Issues
+
+1. Adjust connection limits
+2. Increase cache sizes
+3. Review rate limiting settings
+4. Monitor database performance
+
+### Security Issues
+
+1. Review access control settings
+2. Check rate limiting configuration
+3. Monitor for banned IPs
+4. Review event validation settings

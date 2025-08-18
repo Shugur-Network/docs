@@ -15,8 +15,8 @@ This guide provides detailed instructions for installing Shugur Relay directly o
 
 ### Software Dependencies
 
-- Go: Version 1.24 or newer
-- CockroachDB: Version v24.1.x or newer
+- Go: Version 1.21 or newer
+- Database: CockroachDB 23.1+ (recommended) or PostgreSQL 13+
 - Git, curl, wget, openssl
 - systemd (for service management)
 
@@ -38,7 +38,9 @@ source ~/.bashrc
 go version
 ```
 
-### 2. Install CockroachDB
+### 2. Install Database
+
+#### Option A: CockroachDB (Recommended)
 
 ```bash
 cd /tmp
@@ -49,14 +51,36 @@ sudo chmod +x /usr/local/bin/cockroach
 cockroach version
 ```
 
+#### Option B: PostgreSQL (Alternative)
+
+```bash
+# Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install postgresql postgresql-contrib
+
+# Start PostgreSQL
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+# Create database and user
+sudo -u postgres psql -c "CREATE DATABASE shugur_relay;"
+sudo -u postgres psql -c "CREATE USER relay_user WITH PASSWORD 'your_secure_password';"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE shugur_relay TO relay_user;"
+```
+
 ### 3. Create System Users
 
 ```bash
+# For CockroachDB (if using Option A)
 sudo useradd --system --shell /bin/bash --home /var/lib/cockroach cockroach
+
+# For Shugur Relay
 sudo useradd --system --shell /bin/bash --home /opt/shugur-relay shugur
 ```
 
-### 4. Setup CockroachDB
+### 4. Database Setup
+
+#### For CockroachDB (Option A)
 
 ```bash
 sudo mkdir -p /var/lib/cockroach/{data,certs}
@@ -90,14 +114,25 @@ sudo systemctl start cockroachdb
 sudo -u cockroach cockroach init --certs-dir=/var/lib/cockroach/certs --host=localhost:26257
 ```
 
-### 5. Setup Database
+#### For PostgreSQL (Option B)
 
+If you chose PostgreSQL, the database is already set up. Skip to step 5.
+
+### 5. Initialize Application Database
+
+#### For CockroachDB:
 ```bash
 sudo -u cockroach cockroach sql --certs-dir=/var/lib/cockroach/certs --host=localhost:26257 <<EOF
 CREATE DATABASE IF NOT EXISTS shugur;
 CREATE USER IF NOT EXISTS relay;
 GRANT ALL ON DATABASE shugur TO relay;
 EOF
+```
+
+#### For PostgreSQL:
+```bash
+# Database was already created in step 2, nothing additional needed
+echo "PostgreSQL database already configured"
 ```
 
 ### 6. Build and Install Shugur Relay
@@ -120,6 +155,8 @@ sudo chmod 600 /opt/shugur-relay/certs/*.key
 ```
 
 ### 7. Configure Shugur Relay
+
+#### Option A: YAML Configuration (Recommended)
 
 ```bash
 sudo -u shugur tee /opt/shugur-relay/config/config.yaml > /dev/null <<EOF
@@ -173,6 +210,21 @@ RELAY_POLICY:
 EOF
 ```
 
+#### Option B: Environment Variables
+
+```bash
+# Create environment file
+sudo -u shugur tee /opt/shugur-relay/.env > /dev/null <<EOF
+SHUGUR_RELAY_NAME="shugur-relay"
+SHUGUR_RELAY_WS_ADDR=":8080"
+SHUGUR_DATABASE_SERVER="localhost"
+SHUGUR_DATABASE_PORT="26257"
+SHUGUR_LOGGING_LEVEL="info"
+SHUGUR_RELAY_CONTACT="admin@example.com"
+SHUGUR_RELAY_PUBLIC_URL="ws://localhost:8080"
+EOF
+```
+
 ### 8. Create Systemd Service
 
 ```bash
@@ -202,9 +254,206 @@ sudo systemctl start shugur-relay
 
 ## Verification
 
+### 1. Check Service Status
+
 ```bash
+# Check if services are running
 sudo systemctl status cockroachdb
 sudo systemctl status shugur-relay
+
+# View logs
 sudo journalctl -u shugur-relay -f
-curl http://localhost:8080/
 ```
+
+### 2. Test Relay Connection
+
+```bash
+# Check if relay is responding
+curl -H "Accept: application/nostr+json" http://localhost:8080/
+
+# Check metrics endpoint
+curl http://localhost:2112/metrics
+
+# View web dashboard (if available)
+curl http://localhost:8080
+```
+
+### 3. Test WebSocket Connection
+
+```bash
+# Install wscat if not available
+sudo npm install -g wscat
+
+# Test WebSocket connection
+echo '["REQ","test",{"kinds":[1],"limit":1}]' | wscat -c ws://localhost:8080
+
+# Or interactive test
+wscat -c ws://localhost:8080
+# Then type: ["REQ","test",{}]
+```
+
+### 4. Database Connection Test
+
+#### For CockroachDB:
+```bash
+sudo -u cockroach cockroach sql --certs-dir=/var/lib/cockroach/certs --host=localhost:26257 -e "SELECT version();"
+```
+
+#### For PostgreSQL:
+```bash
+sudo -u postgres psql shugur_relay -c "SELECT version();"
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### 1. Database Connection Failed
+
+**CockroachDB:**
+```bash
+# Check if CockroachDB is running
+sudo systemctl status cockroachdb
+
+# Check certificate permissions
+ls -la /var/lib/cockroach/certs/
+
+# Test database connection
+sudo -u cockroach cockroach sql --certs-dir=/var/lib/cockroach/certs --host=localhost:26257 -e "SELECT 1;"
+```
+
+**PostgreSQL:**
+```bash
+# Check if PostgreSQL is running
+sudo systemctl status postgresql
+
+# Test connection
+sudo -u postgres psql -c "SELECT 1;"
+```
+
+#### 2. Port Already in Use
+
+```bash
+# Check what's using port 8080
+sudo netstat -tulpn | grep :8080
+# or
+sudo lsof -i :8080
+
+# Change port in configuration file
+sudo nano /opt/shugur-relay/config/config.yaml
+```
+
+#### 3. Permission Denied
+
+```bash
+# Make sure relay binary is executable
+sudo chmod +x /usr/local/bin/shugur-relay
+
+# Check file permissions
+ls -la /usr/local/bin/shugur-relay
+
+# Check config file permissions
+sudo chown shugur:shugur /opt/shugur-relay/config/config.yaml
+```
+
+#### 4. Go Build Issues
+
+```bash
+# Check Go installation
+go version
+
+# Clean module cache
+go clean -modcache
+
+# Reinstall dependencies
+cd /tmp/Relay && go mod download
+```
+
+### Service Management
+
+```bash
+# Start services
+sudo systemctl start cockroachdb
+sudo systemctl start shugur-relay
+
+# Stop services
+sudo systemctl stop shugur-relay
+sudo systemctl stop cockroachdb
+
+# Restart services
+sudo systemctl restart shugur-relay
+
+# Enable auto-start on boot
+sudo systemctl enable cockroachdb
+sudo systemctl enable shugur-relay
+```
+
+## Performance Tuning
+
+### Database Optimization
+
+#### CockroachDB Settings:
+```bash
+# Connect to CockroachDB and run optimization commands
+sudo -u cockroach cockroach sql --certs-dir=/var/lib/cockroach/certs --host=localhost:26257 <<EOF
+SET CLUSTER SETTING kv.range_split.by_load_enabled = true;
+SET CLUSTER SETTING kv.range_split.load_qps_threshold = 2500;
+EOF
+```
+
+#### PostgreSQL Settings:
+```bash
+# Edit PostgreSQL configuration
+sudo nano /etc/postgresql/*/main/postgresql.conf
+
+# Recommended settings for relay workload:
+# shared_buffers = 256MB
+# effective_cache_size = 1GB
+# random_page_cost = 1.1
+# checkpoint_completion_target = 0.9
+```
+
+### Operating System Limits
+
+```bash
+# Increase file descriptor limits
+echo "* soft nofile 65536" | sudo tee -a /etc/security/limits.conf
+echo "* hard nofile 65536" | sudo tee -a /etc/security/limits.conf
+
+# Or for current session
+ulimit -n 65536
+
+# For systemd services, add to service file:
+# LimitNOFILE=65536
+```
+
+### Relay Configuration Tuning
+
+```yaml
+# High-performance settings for /opt/shugur-relay/config/config.yaml
+RELAY:
+  EVENT_CACHE_SIZE: 50000      # Increase for more memory
+  SEND_BUFFER_SIZE: 16384      # Increase for high throughput
+  THROTTLING:
+    MAX_CONNECTIONS: 2000      # Adjust based on server capacity
+    MAX_EVENTS_PER_SECOND: 50  # Adjust based on requirements
+```
+
+## Next Steps
+
+After successful installation:
+
+1. **Configuration**: Review the [Configuration Guide](./configuration) for advanced settings
+2. **Monitoring**: Set up monitoring using Prometheus metrics at `:2112`
+3. **Security**: Configure firewall rules and SSL certificates for production
+4. **Backup**: Set up automated database backups
+5. **Performance**: Monitor and tune based on your workload
+
+## Getting Help
+
+If you encounter issues:
+
+1. Check the [Troubleshooting Guide](./troubleshooting) for more solutions
+2. Review logs: `sudo journalctl -u shugur-relay -f`
+3. Check the GitHub Issues page for known problems
+4. Join the community discussions for support
