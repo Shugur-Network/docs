@@ -47,7 +47,8 @@ export default defineConfig({
           items: [
             { label: 'Nostr Concepts', link: '/concepts' },
             { label: 'Architecture', link: '/architecture' },
-            { label: 'NIPs Support', link: '/nips-support' }
+            { label: 'NIPs Support', link: '/nips-support' },
+            { label: 'Time Capsules', link: '/time-capsules' }
           ]
         },
         {

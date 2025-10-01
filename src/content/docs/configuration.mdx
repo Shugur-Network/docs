@@ -23,6 +23,7 @@ The configuration follows a hierarchical YAML structure with these main sections
 - `METRICS` - Metrics and monitoring settings
 - `RELAY` - Core relay functionality settings
 - `RELAY_POLICY` - Access control and policy settings
+- `CAPSULES` - Time Capsules feature settings
 - `DATABASE` - Database connection settings
 
 ---
@@ -136,6 +137,7 @@ Core relay configuration parameters.
 | THROTTLING.RATE_LIMIT.MAX_REQUESTS_PER_SECOND | SHUGUR_RELAY_THROTTLING_RATE_LIMIT_MAX_REQUESTS_PER_SECOND | Maximum requests per second per client. | 20 |
 | THROTTLING.RATE_LIMIT.BURST_SIZE | SHUGUR_RELAY_THROTTLING_RATE_LIMIT_BURST_SIZE | Burst size for rate limiting. | 5 |
 | THROTTLING.RATE_LIMIT.PROGRESSIVE_BAN | SHUGUR_RELAY_THROTTLING_RATE_LIMIT_PROGRESSIVE_BAN | Whether to enable progressive banning. | true |
+| THROTTLING.RATE_LIMIT.BAN_DURATION | SHUGUR_RELAY_THROTTLING_RATE_LIMIT_BAN_DURATION | Ban duration for rate limit violations. | 5m |
 | THROTTLING.RATE_LIMIT.MAX_BAN_DURATION | SHUGUR_RELAY_THROTTLING_RATE_LIMIT_MAX_BAN_DURATION | Maximum ban duration. | 24h |
 
 #### Rate Limiting Behavior
@@ -144,6 +146,33 @@ Core relay configuration parameters.
 - **Burst Allowance**: Allows brief bursts above the steady rate 
 - **Progressive Banning**: Ban duration increases with repeated violations
 - **IP-based**: Rate limits are applied per client IP address
+
+---
+
+## CAPSULES
+
+Time Capsules feature configuration for NIP-XX timelock encryption.
+
+| YAML Key | Environment Variable | Description | Default |
+| :--- | :--- | :--- | :--- |
+| ENABLED | SHUGUR_CAPSULES_ENABLED | Whether to enable Time Capsules feature. | true |
+| MAX_WITNESSES | SHUGUR_CAPSULES_MAX_WITNESSES | Maximum witnesses for threshold schemes (legacy, not used for drand). | 9 |
+
+### Time Capsules Configuration
+
+Time Capsules use drand randomness beacon network for timelock encryption:
+
+- **Public Capsules**: Time-locked messages (kind 1041) that anyone can decrypt after unlock time
+- **Private Capsules**: Gift-wrapped time capsules using NIP-59 for targeted delivery
+- **Drand Integration**: Uses real drand networks (Quicknet, Mainnet) for decentralized timelock
+
+Example:
+
+```yaml
+CAPSULES:
+  ENABLED: true
+  MAX_WITNESSES: 9  # Legacy setting, kept for compatibility
+```
 
 ---
 
@@ -204,9 +233,13 @@ export SHUGUR_LOGGING_FILE="/var/log/relay.log"
 export SHUGUR_METRICS_ENABLED="true"
 export SHUGUR_METRICS_PORT="2112"
 
-# Rate limiting
-export SHUGUR_RELAY_THROTTLING_RATE_LIMIT_ENABLED="true"
-export SHUGUR_RELAY_THROTTLING_RATE_LIMIT_MAX_EVENTS_PER_SECOND="100"
+# Time Capsules configuration
+export SHUGUR_CAPSULES_ENABLED="true"
+export SHUGUR_CAPSULES_MAX_WITNESSES="9"
+
+# Rate limiting enhancements
+export SHUGUR_RELAY_THROTTLING_RATE_LIMIT_BAN_DURATION="5m"
+export SHUGUR_RELAY_THROTTLING_RATE_LIMIT_MAX_BAN_DURATION="24h"
 ```
 
 ## Command Line Flags
@@ -286,7 +319,12 @@ RELAY:
       MAX_EVENTS_PER_SECOND: 50
       MAX_REQUESTS_PER_SECOND: 100
       PROGRESSIVE_BAN: true
+      BAN_DURATION: 5m
       MAX_BAN_DURATION: 24h
+
+CAPSULES:
+  ENABLED: true
+  MAX_WITNESSES: 9
 
 DATABASE:
   SERVER: "prod-db-cluster.example.com"

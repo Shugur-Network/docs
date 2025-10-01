@@ -47,12 +47,13 @@ Nostr takes a different approach: simple decentralization.
 
 Shugur Relay takes Nostr decentralization further with **High Availability (HA) distributed relay clusters**.
 
-- **How it works**: Instead of managing connections to multiple individual relays, users connect to a single Shugur Relay that represents an entire distributed cluster. Data is automatically replicated across multiple nodes in the network.
+- **How it works**: Multiple Shugur Relay nodes work together as a cluster, automatically replicating data between nodes. Clients can connect to any node in the cluster and will see the same data. When a node fails, clients can reconnect to another node in the cluster.
 - **The Advantage**: 
-  - **Simplified Connectivity**: Connect to one relay, access the entire cluster's data
-  - **Automatic Failover**: If one relay node fails, your connection seamlessly continues through other nodes
-  - **Data Persistence**: Your data exists across the network, not just on a single relay
-  - **No Client-Side Complexity**: No need to manage multiple relay connections or handle failover logic
+  - **Data Redundancy**: Your data exists across multiple nodes, not just one relay
+  - **Automatic Replication**: Data is synchronized across the cluster automatically
+  - **High Availability**: If one node fails, other nodes continue serving the same data
+  - **Client Failover**: Clients can switch between cluster nodes when needed
+  - **Unified Data View**: All nodes in the cluster serve the same complete dataset
 
 **Traditional Nostr Model**: Multiple relay connections
 ```mermaid
@@ -72,37 +73,41 @@ graph LR
     style R3 fill:#e1f5fe
 ```
 
-**Shugur Model**: Single connection to HA distributed cluster
+**Shugur Model**: Client connects to distributed cluster nodes
 ```mermaid
 graph LR
-    A[User A] --> SG[Shugur Gateway]
+    A[User A] --> N1[Node 1]
+    A -.->|Failover| N2[Node 2]
+    A -.->|Failover| N3[Node 3]
     
     subgraph "HA Cluster"
-        SG --> N1[Node 1]
-        SG --> N2[Node 2]
-        SG --> N3[Node 3]
         N1 -.->|Auto Replication| N2
         N2 -.->|Auto Replication| N3
         N3 -.->|Auto Replication| N1
     end
     
-    SG --> B[User B]
+    N1 --> B[User B]
+    N2 -.-> B
+    N3 -.-> B
     
     style A fill:#e8f5e8
     style B fill:#e8f5e8
-    style SG fill:#c8e6c9
-    style N1 fill:#e1f5fe
+    style N1 fill:#c8e6c9
     style N2 fill:#e1f5fe
     style N3 fill:#e1f5fe
 ```
 
 ## Key Nostr Concepts
 
-### Federated Relays & The Outbox Model
+### Federated Relays & High Availability Clusters
 
 Rather than all users connecting to one massive server, users connect to multiple relays. Each relay independently decides what content to store and serve. This creates a federated network.
 
-**Shugur Simplification**: While traditional Nostr requires clients to manage multiple relay connections and implement the outbox model logic, Shugur's HA distributed cluster handles this complexity internally. Users get the benefits of federation (no single point of failure, distributed data) without the client-side complexity.
+**Shugur Enhancement**: Shugur Relay extends this model with distributed cluster architecture. While clients still choose which relays to connect to, each Shugur Relay represents a cluster of nodes working together. This means:
+
+- **Data Persistence**: When you publish to one node, it's automatically replicated to other cluster nodes
+- **Failover Capability**: If the node you're connected to fails, you can reconnect to another node in the same cluster and continue accessing the same data
+- **Load Distribution**: Multiple nodes can serve the same data, distributing the load across the cluster
 
 ### Public Key Infrastructure (Identity)
 

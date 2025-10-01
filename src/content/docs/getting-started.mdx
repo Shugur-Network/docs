@@ -7,8 +7,9 @@ This guide covers the prerequisites for installing Shugur Relay. Ensure your sys
 
 ## Why Choose Shugur Relay?
 
-Shugur Relay's **High Availability (HA) distributed cluster architecture** provides unique advantages:
+Shugur Relay's **High Availability (HA) distributed cluster architecture** with **35+ NIP support** provides unique advantages:
 
+- **Complete Feature Set**: Time Capsules, Cashu Wallets, Nutzaps, Lightning Zaps, Moderated Communities
 - **Simplified Operations**: Deploy once, connect everywhere - no client-side multi-relay management
 - **Automatic Failover**: Built-in redundancy ensures 99.9%+ uptime without manual intervention
 - **Data Persistence**: Your data lives across the cluster network, not on a single point of failure
@@ -38,9 +39,13 @@ sh get-docker.sh
 
 ### For Bare Metal Installations
 
-- Go: Version 1.24 or newer.
-- CockroachDB: Version v24.1.x.
+- Go: Version 1.24.4 or newer.
+- CockroachDB: Version v24.1.x or newer.
 - Git, Curl, Wget, OpenSSL.
+
+**Additional for Time Capsules:**
+- `tle` (tlock encryption): `go install github.com/drand/tlock/cmd/tle@latest`
+- `nak` (Nostr toolkit): `go install github.com/fiatjaf/nak@latest`
 
 ## Network Requirements
 
@@ -55,6 +60,8 @@ The following ports must be accessible on your server(s).
 | 26257 | TCP      | CockroachDB SQL client connections        | All               |
 | 26258 | TCP      | CockroachDB inter-node communication      | Distributed Only  |
 | 22    | TCP      | SSH for installation script               | Distributed Only  |
+
+**Note**: Enhanced installation scripts now support interactive, direct, and piped modes for domain configuration.
 
 ## Next Steps
 

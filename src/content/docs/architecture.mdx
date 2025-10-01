@@ -7,7 +7,7 @@ This document provides a detailed overview of Shugur Relay's technical architect
 
 ## High-Level Architecture
 
-Shugur Relay is designed as a **distributed relay cluster** that provides fault-tolerant, scalable Nostr infrastructure through a stateless, layered architecture. Users connect to a single gateway that represents the entire cluster, eliminating the need for client-side multi-relay management.
+Shugur Relay is designed as a **distributed relay cluster** that provides fault-tolerant, scalable Nostr infrastructure through a stateless, layered architecture. Clients connect directly to individual nodes in the cluster and handle failover themselves when nodes become unavailable.
 
 ```mermaid
 graph TB
@@ -77,10 +77,10 @@ graph TB
 
 Shugur Relay operates as a distributed cluster where multiple relay nodes work together to provide high availability and data redundancy. This architecture ensures that:
 
-- **Single Connection Point**: Clients connect to any node in the cluster and gain access to the entire network's data
-- **Automatic Failover**: If a node becomes unavailable, clients are seamlessly redirected to healthy nodes
+- **Direct Node Access**: Clients connect directly to individual nodes in the cluster
+- **Client-Side Failover**: When a node becomes unavailable, clients reconnect to other healthy nodes
 - **Data Replication**: Events are automatically replicated across cluster nodes using CockroachDB's distributed consensus
-- **Transparent Scaling**: New nodes can be added to the cluster without client reconfiguration
+- **Transparent Scaling**: New nodes can be added to the cluster, and clients can discover and connect to them
 
 ```mermaid
 graph TB
@@ -90,15 +90,11 @@ graph TB
         C3[Nostr Client 3]
     end
     
-    subgraph "Load Balancer Layer"
-        LB[Load Balancer<br/>Health Checks]
-    end
-    
     subgraph "Shugur Distributed Cluster"
         subgraph "Relay Nodes"
-            N1[Node 1<br/>Gateway]
-            N2[Node 2<br/>Gateway]
-            N3[Node 3<br/>Gateway]
+            N1[Node 1]
+            N2[Node 2]
+            N3[Node 3]
         end
         
         subgraph "Distributed Database"
@@ -108,13 +104,17 @@ graph TB
         end
     end
     
-    C1 --> LB
-    C2 --> LB
-    C3 --> LB
+    C1 --> N1
+    C1 -.->|Failover| N2
+    C1 -.->|Failover| N3
     
-    LB --> N1
-    LB --> N2
-    LB --> N3
+    C2 --> N2
+    C2 -.->|Failover| N1
+    C2 -.->|Failover| N3
+    
+    C3 --> N3
+    C3 -.->|Failover| N1
+    C3 -.->|Failover| N2
     
     N1 --> DB1
     N2 --> DB2
@@ -124,31 +124,33 @@ graph TB
     DB2 -.->|Consensus Replication| DB3
     DB3 -.->|Consensus Replication| DB1
     
-    style LB fill:#c8e6c9
-    style N1 fill:#e1f5fe
+    style N1 fill:#c8e6c9
     style N2 fill:#e1f5fe
     style N3 fill:#e1f5fe
     style DB1 fill:#f3e5f5
     style DB2 fill:#f3e5f5
     style DB3 fill:#f3e5f5
+    style C1 fill:#e8f5e8
+    style C2 fill:#e8f5e8
+    style C3 fill:#e8f5e8
 ```
 
 ### Failover Behavior
 
-1. **Health Monitoring**: Each node continuously monitors cluster health
-2. **Automatic Detection**: Failed nodes are detected within seconds
-3. **Traffic Rerouting**: Load balancer redirects traffic to healthy nodes
-4. **Data Availability**: All data remains accessible through surviving nodes
-5. **Transparent Recovery**: Failed nodes can rejoin without data loss
+1. **Health Monitoring**: Clients monitor connection health to their connected node
+2. **Failure Detection**: Clients detect connection failures (network timeout, connection drop)
+3. **Node Discovery**: Clients maintain a list of available cluster nodes
+4. **Reconnection**: Clients reconnect to alternative nodes when failures occur
+5. **Data Consistency**: All nodes serve the same data due to CockroachDB replication
 
 ### Benefits Over Traditional Multi-Relay Setup
 
 | Traditional Nostr | Shugur Distributed Cluster |
 |------------------|------------------|
-| Client manages multiple connections | Single connection to cluster |
-| Manual failover logic required | Automatic failover |
+| Client manages multiple connections | Client connects to cluster nodes |
+| Manual failover logic required | Client handles failover between cluster nodes |
 | Data scattered across relays | Unified data across cluster |
-| Complex relay discovery | Simple gateway discovery |
+| Complex relay discovery | Cluster node discovery |
 | Potential data inconsistency | Strong consistency via CockroachDB |
 
 ## Core Components
@@ -530,10 +532,9 @@ graph TB
 
 ```mermaid
 graph TB
-    C[Clients] <--> LB[Load Balancer]
-    LB <--> R1[Relay Node 1]
-    LB <--> R2[Relay Node 2]
-    LB <--> R3[Relay Node 3]
+    C[Clients] --> R1[Relay Node 1]
+    C -.->|Failover| R2[Relay Node 2]
+    C -.->|Failover| R3[Relay Node 3]
     
     R1 <--> DB1[(CockroachDB Node 1)]
     R2 <--> DB2[(CockroachDB Node 2)]
@@ -543,18 +544,17 @@ graph TB
     DB2 -.-> DB3
     DB3 -.-> DB1
     
-    style LB fill:#ffecb3
-    style R1 fill:#f3e5f5
-    style R2 fill:#f3e5f5
-    style R3 fill:#f3e5f5
-    style DB1 fill:#e1f5fe
-    style DB2 fill:#e1f5fe
-    style DB3 fill:#e1f5fe
+    style R1 fill:#c8e6c9
+    style R2 fill:#e1f5fe
+    style R3 fill:#e1f5fe
+    style DB1 fill:#f3e5f5
+    style DB2 fill:#f3e5f5
+    style DB3 fill:#f3e5f5
     style C fill:#e8f5e8
 ```
 
-- **Pros**: Highly available and horizontally scalable; tolerant to node failures
-- **Cons**: More complex to set up and manage
+- **Pros**: Highly available and horizontally scalable; tolerant to node failures; clients handle load distribution
+- **Cons**: Clients need to implement failover logic; more complex client setup
 
 ## Monitoring and Observability
 

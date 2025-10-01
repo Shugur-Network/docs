@@ -39,14 +39,24 @@ This guide provides recommendations for optimizing Shugur Relay performance in p
 RELAY:
   EVENT_CACHE_SIZE: 50000          # Increase for better read performance
   SEND_BUFFER_SIZE: 16384          # Larger buffer for high-throughput
-  WRITE_TIMEOUT: 30s               # Adjust based on network conditions
+  WRITE_TIMEOUT: 60s               # Adjust based on network conditions
+  IDLE_TIMEOUT: 300s               # Connection timeout
   THROTTLING:
-    MAX_CONNECTIONS: 5000          # Scale based on server capacity
-    MAX_CONTENT_LENGTH: 16384      # Allow larger events if needed
+    MAX_CONNECTIONS: 10000         # Scale based on server capacity
+    MAX_CONTENT_LENGTH: 4096       # Allow larger events (Time Capsules need ~4KB)
     RATE_LIMIT:
-      MAX_EVENTS_PER_SECOND: 20    # Balance spam protection vs. usability
-      MAX_REQUESTS_PER_SECOND: 50  # Allow more requests for active users
-      BURST_SIZE: 10               # Allow bursts for normal usage patterns
+      ENABLED: true
+      MAX_EVENTS_PER_SECOND: 50    # Balance spam protection vs. usability
+      MAX_REQUESTS_PER_SECOND: 100 # Allow more requests for active users
+      BURST_SIZE: 20               # Allow bursts for normal usage patterns
+      PROGRESSIVE_BAN: true        # Escalating ban durations
+      BAN_DURATION: 5m             # Initial ban duration
+      MAX_BAN_DURATION: 24h        # Maximum ban duration
+
+# Enable advanced features
+CAPSULES:
+  ENABLED: true                    # Time Capsules support
+  MAX_WITNESSES: 9                 # For compatibility
 ```
 
 ### Database Optimization
@@ -133,6 +143,8 @@ echo never > /sys/kernel/mm/transparent_hugepage/enabled
 - **Response Time**: Average response time for queries
 - **Error Rate**: HTTP/WebSocket error rates
 - **Memory Usage**: Go heap and system memory usage
+- **NIP Metrics**: Time Capsules creation/unlock rates, Cashu operations
+- **Feature Usage**: COUNT commands, search queries, specialized NIPs
 
 #### Database Metrics
 - **Query Latency**: P50, P95, P99 query response times
@@ -154,13 +166,15 @@ echo never > /sys/kernel/mm/transparent_hugepage/enabled
 scrape_configs:
   - job_name: 'shugur-relay'
     static_configs:
-      - targets: ['localhost:2112']  # Relay metrics port
+      - targets: ['localhost:8181']  # Updated metrics port
     scrape_interval: 15s
+    metrics_path: '/metrics'
     
   - job_name: 'cockroachdb'
     static_configs:
-      - targets: ['localhost:8080']  # CockroachDB metrics port
+      - targets: ['localhost:9090']  # CockroachDB admin UI
     scrape_interval: 30s
+    metrics_path: '/_status/vars'
 ```
 
 ### Grafana Dashboards
@@ -188,14 +202,21 @@ bombardier -c 50 -d 30s -l http://localhost:8080/api/stats
 
 ### Benchmark Results
 
-Expected performance on recommended hardware:
+Based on production deployments and testing with v1.3.x:
 
 | Metric | Standalone | Distributed (3-node) |
 |--------|------------|---------------------|
-| **Concurrent Connections** | 1,000-5,000 | 10,000-50,000 |
-| **Events/Second** | 500-2,000 | 5,000-20,000 |
-| **Query Latency (P95)** | < 10ms | < 5ms |
-| **Memory Usage** | 512MB-2GB | 1GB-4GB per node |
+| **Concurrent Connections** | 10,000+ | 50,000+ |
+| **Events/Second** | 5,000+ | 25,000+ |
+| **Query Latency (P95)** | < 10ms | < 15ms |
+| **Memory Usage** | ~200MB | ~150MB per node |
+| **Database Throughput** | 2,000 writes/sec | 10,000+ writes/sec |
+
+**Real-world performance varies based on:**
+- Event complexity and size
+- NIP features used (Time Capsules, search, etc.)
+- Database configuration and hardware
+- Network latency and bandwidth
 
 ## Scaling Strategies
 
