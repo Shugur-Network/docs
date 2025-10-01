@@ -1,24 +1,47 @@
-/* Starlight custom styles - Light mode only */
+/* Starlight custom styles - LIGHT MODE ONLY */
+
+/* Primary light mode enforcement */
 :root {
-  --sl-color-bg: #FAFAFA;
+  color-scheme: light only !important;
+  --sl-color-bg: #FAFAFA !important;
   
-  /* Use original Shugur brand colors - Design System */
-  --sl-hue-accent: 168; /* Teal hue for #36BA98 */
-  --sl-color-accent-low: #2a8066;
-  --sl-color-accent: #36BA98; /* Original brand color */
-  --sl-color-accent-high: #52d4aa;
+  /* Use Shugur Design System colors - shugur.500 and shugur.600 */
+  --sl-hue-accent: 168; /* Teal hue for #059669 */
+  --sl-color-accent-low: #047857 !important;
+  --sl-color-accent: #059669 !important; /* Design system shugur.500 */
+  --sl-color-accent-high: #2dd4bf !important;
   
-  /* Override other accent variants for consistency */
-  --sl-color-accent-50: #f0fdf9;
-  --sl-color-accent-100: #d1fae5;
-  --sl-color-accent-200: #a7f3d0;
-  --sl-color-accent-300: #6ee7b7;
-  --sl-color-accent-400: #36BA98;
-  --sl-color-accent-500: #36BA98;
-  --sl-color-accent-600: #2a8066;
-  --sl-color-accent-700: #1f5f4a;
-  --sl-color-accent-800: #184e3a;
-  --sl-color-accent-900: #143e30;
+  /* Override other accent variants for design system consistency */
+  --sl-color-accent-50: #f0fdf9 !important;
+  --sl-color-accent-100: #ccfbf1 !important;
+  --sl-color-accent-200: #99f6e4 !important;
+  --sl-color-accent-300: #5eead4 !important;
+  --sl-color-accent-400: #2dd4bf !important;
+  --sl-color-accent-500: #059669 !important;
+  --sl-color-accent-600: #047857 !important;
+  --sl-color-accent-700: #065f46 !important;
+  --sl-color-accent-800: #064e3b !important;
+  --sl-color-accent-900: #022c22 !important;
+}
+
+/* Force light theme on all elements */
+*,
+*::before,
+*::after {
+  color-scheme: light only !important;
+}
+
+/* Hide theme selector completely */
+starlight-theme-select,
+.sl-theme-toggle,
+[data-theme-toggle],
+.theme-toggle,
+.color-scheme-toggle,
+button[title*="theme"],
+button[aria-label*="theme"],
+.starlight-theme-select {
+  display: none !important;
+  visibility: hidden !important;
 }
 
 // Force light mode - disable dark mode completely
@@ -26,36 +49,50 @@
   color-scheme: light only;
 }
 
-// Override any dark mode variables to use light mode values
+// Override ANY dark mode attempts - force light mode values
+html[data-theme="dark"],
+html[data-theme="system"],
 [data-theme="dark"],
-[data-theme="system"] {
-  --sl-color-accent: #3b82f6;
-  --sl-color-accent-low: #dbeafe;
-  --sl-color-accent-high: #1e40af;
-  --sl-color-white: #ffffff;
-  --sl-color-gray-1: #f9fafb;
-  --sl-color-gray-2: #f3f4f6;
-  --sl-color-gray-3: #e5e7eb;
-  --sl-color-gray-4: #d1d5db;
-  --sl-color-gray-5: #9ca3af;
-  --sl-color-gray-6: #6b7280;
-  --sl-color-gray-7: #4b5563;
-  --sl-color-gray-8: #374151;
-  --sl-color-gray-9: #1f2937;
-  --sl-color-black: #111827;
-  --sl-color-text: #111827;
-  --sl-color-text-subtle: #6b7280;
-  --sl-color-text-accent: #1e40af;
-  --sl-color-background: #ffffff;
-  --sl-color-background-subtle: #f9fafb;
-  --sl-color-background-muted: #f3f4f6;
-  --sl-color-background-accent: #dbeafe;
-  --sl-color-border: #e5e7eb;
-  --sl-color-border-subtle: #f3f4f6;
-  --sl-color-border-accent: #93c5fd;
-  --sl-color-shadow: rgba(0, 0, 0, 0.1);
-  --sl-color-shadow-subtle: rgba(0, 0, 0, 0.05);
-  --sl-color-shadow-accent: rgba(59, 130, 246, 0.1);
+[data-theme="system"],
+body[data-theme="dark"],
+body[data-theme="system"],
+.dark,
+.theme-dark {
+  color-scheme: light only !important;
+  --sl-color-accent: #059669 !important;
+  --sl-color-accent-low: #047857 !important;
+  --sl-color-accent-high: #2dd4bf !important;
+  --sl-color-white: #ffffff !important;
+  --sl-color-gray-1: #f9fafb !important;
+  --sl-color-gray-2: #f3f4f6 !important;
+  --sl-color-gray-3: #e5e7eb !important;
+  --sl-color-gray-4: #d1d5db !important;
+  --sl-color-gray-5: #9ca3af !important;
+  --sl-color-gray-6: #6b7280 !important;
+  --sl-color-gray-7: #4b5563 !important;
+  --sl-color-gray-8: #374151 !important;
+  --sl-color-gray-9: #1f2937 !important;
+  --sl-color-black: #111827 !important;
+  --sl-color-text: #111827 !important;
+  --sl-color-text-subtle: #6b7280 !important;
+  --sl-color-text-accent: #059669 !important;
+  --sl-color-background: #ffffff !important;
+  --sl-color-background-subtle: #f9fafb !important;
+  --sl-color-background-muted: #f3f4f6 !important;
+  --sl-color-background-accent: #ccfbf1 !important;
+  --sl-color-border: #e5e7eb !important;
+  --sl-color-border-subtle: #f3f4f6 !important;
+  --sl-color-border-accent: #99f6e4 !important;
+  --sl-color-shadow: rgba(0, 0, 0, 0.1) !important;
+  --sl-color-shadow-subtle: rgba(0, 0, 0, 0.05) !important;
+  --sl-color-shadow-accent: rgba(5, 150, 105, 0.1) !important;
+  
+  /* Additional Starlight-specific overrides */
+  --sl-color-bg: #FAFAFA !important;
+  --sl-color-bg-nav: #ffffff !important;
+  --sl-color-bg-sidebar: #ffffff !important;
+  --sl-color-hairline: #e5e7eb !important;
+  --sl-color-hairline-light: #f3f4f6 !important;
 }
 
 // Force light mode for all elements
