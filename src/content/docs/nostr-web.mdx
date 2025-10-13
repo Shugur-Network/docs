@@ -1,0 +1,586 @@
+---
+title: Nostr Web User Guide
+description: Complete guide to browsing and publishing decentralized websites on Nostr
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+# Nostr Web User Guide
+
+Nostr Web enables hosting and browsing static websites as Nostr events, creating censorship-resistant, decentralized web publishing.
+
+<Aside type="tip">
+  **Quick Start:** Install the browser extension and visit any Nostr Web site like `nweb.shugur.com` to experience decentralized browsing.
+</Aside>
+
+## What is Nostr Web?
+
+Nostr Web is a protocol and ecosystem for publishing static websites as Nostr events. Instead of traditional web servers, content is stored across Nostr relays, making sites:
+
+- **Censorship-resistant** — Replicated across multiple relays
+- **Verifiable** — Cryptographically signed by the author
+- **Decentralized** — No single point of failure
+- **Accessible** — Works with existing Nostr infrastructure
+
+## For Users: Browse Nostr Web Sites
+
+### Install the Browser Extension
+
+The Nostr Web browser extension enables transparent browsing of decentralized websites.
+
+#### Installation Steps
+
+1. **Download** from [Chrome Web Store](https://chrome.google.com/webstore) (coming soon)
+2. Or download the latest release ZIP from [GitHub Releases](https://github.com/Shugur-Network/nostr-web/releases)
+3. **Load in Chrome:**
+   - Open `chrome://extensions/`
+   - Enable "Developer mode" (top-right toggle)
+   - Click "Load unpacked"
+   - Select the extension directory
+
+#### Features
+
+- 🌐 **Transparent Browsing** — Just type a URL, automatic Nostr Web detection
+- ⚡ **Fast Loading** — Parallel relay fetching with smart caching
+- 🔒 **Secure** — Author verification, SHA256 integrity, sandboxed rendering
+- 💾 **Smart Caching** — DNS offline-only, site index always fresh
+- 📡 **Multi-Relay** — Fetches from multiple relays for redundancy
+
+### Using the Extension
+
+#### Automatic Detection (Recommended)
+
+1. Type any domain in your browser address bar (e.g., `example.com`)
+2. Extension automatically checks for `_nweb.<domain>` DNS TXT record
+3. If found, loads the Nostr Web site automatically
+
+**How it works:**
+
+```
+User navigates to example.com
+    ↓
+Extension intercepts navigation
+    ↓
+Checks DNS for _nweb.example.com
+    ↓
+Found? → Load from Nostr relays
+Not found? → Allow normal browsing
+```
+
+#### Manual Entry
+
+1. Click the extension icon in your browser toolbar
+2. Enter a domain (e.g., `nweb.shugur.com`)
+3. Click "Open" or press Enter
+4. Page loads in the Nostr Web viewer
+
+#### Settings
+
+Click the ⚙️ icon in the viewer to access:
+
+- **Default Website** — Set a site to load on extension first launch
+- **Clear Cache** — Remove all cached DNS records and events (preserves settings)
+
+### Troubleshooting
+
+#### Extension not detecting sites
+
+**Problem:** Typing a domain doesn't load Nostr Web site
+
+**Solutions:**
+
+1. Check DNS TXT record exists at `_nweb.<domain>`
+2. Wait for DNS propagation (5-30 minutes after DNS update)
+3. Try manual entry via extension popup
+4. Check browser console for errors (F12)
+
+#### Slow loading
+
+**Problem:** Pages take more than 10 seconds to load
+
+**Solutions:**
+
+1. Check your internet connection
+2. Verify relays are online and responding
+3. Clear extension cache (Settings → Clear Cache)
+4. Try a different network
+
+#### Scripts not working
+
+**Problem:** JavaScript on page doesn't execute
+
+**Solutions:**
+
+1. Check browser console for CSP errors (F12 → Console)
+2. Verify the site was published correctly
+3. Try refreshing the page
+4. Clear cache and reload
+
+## For Publishers: Host Your Site on Nostr
+
+### Prerequisites
+
+- Node.js (v16 or later)
+- npm or yarn
+- A Nostr private key (hex format)
+- Access to Nostr relays
+
+### Installation
+
+```bash
+cd publisher
+npm install
+npm link
+```
+
+This creates a global `nw-publish` command you can use anywhere.
+
+### Quick Start
+
+#### 1. Set Up Environment Variables
+
+Create a `.env` file in the publisher directory:
+
+```bash
+# Required: Your Nostr private key (64-character hex)
+NOSTR_SK_HEX="your_private_key_hex_here"
+
+# Required: Relay URLs (comma-separated)
+RELAYS="wss://shu01.shugur.net,wss://shu02.shugur.net,wss://shu03.shugur.net"
+
+# Recommended: Your domain (for DNS TXT record generation)
+NWEB_HOST="yourdomain.com"
+
+# Optional: Blossom endpoints for media uploads
+BLOSSOM_ENDPOINTS="https://blossom.shugur.net"
+```
+
+<Aside type="caution">
+  **Security:** Never commit `.env` to version control! Add it to `.gitignore`.
+</Aside>
+
+#### 2. Publish Your Site
+
+```bash
+nw-publish /path/to/your/site
+```
+
+Example:
+
+```bash
+nw-publish ../examples/hello-world
+```
+
+#### 3. Set Up DNS
+
+The publisher outputs `_nweb.txt` with instructions. Copy the JSON value into a TXT record:
+
+```
+Host: _nweb.yourdomain.com
+Type: TXT
+Value: {"v":1,"pk":"npub1...","relays":["wss://relay.damus.io",...]}
+```
+
+**DNS Provider Examples:**
+
+**Cloudflare:**
+```
+Type: TXT
+Name: _nweb
+Content: {"v":1,"pk":"npub1...","relays":["wss://..."]}
+TTL: Auto
+```
+
+**Route 53:**
+```
+Type: TXT
+Name: _nweb.yourdomain.com
+Value: "{"v":1,"pk":"npub1...","relays":["wss://..."]}"
+TTL: 300
+```
+
+### Publishing Workflow
+
+```
+Static Site Folder
+  ├─> Scan files (HTML, CSS, JS)
+  ├─> Compute SHA256 hashes
+  ├─> Sign as Nostr events
+  │     ├─> Kind 40000: HTML content
+  │     ├─> Kind 40001: CSS stylesheets
+  │     ├─> Kind 40002: JavaScript modules
+  │     └─> Kind 40003: Reusable components
+  ├─> Publish to relays (parallel)
+  ├─> Create page manifests (kind 34235)
+  └─> Update site index (kind 34236)
+```
+
+### Smart Caching
+
+The publisher uses intelligent caching to avoid republishing unchanged content:
+
+**Immutable assets** (kinds 40000-40003):
+
+- **Cache file:** `.nweb-cache.json` (in site folder)
+- **Cache key:** `${filepath}:${hash}` (content-addressed)
+- **Behavior:** If file unchanged, reuses cached event ID
+- **Benefit:** Only publishes new/changed assets
+
+**Addressable events** (kinds 34235, 34236):
+
+- **Always republished** with fresh `created_at` timestamps
+- Ensures extension detects which site is newest
+- Allows multiple sites with same pubkey to stay synchronized
+
+### Site Structure
+
+**Input (static site):**
+
+```
+my-site/
+  ├─ index.html       # Home page
+  ├─ style.css        # Stylesheet
+  ├─ app.js           # JavaScript
+  ├─ about.html       # Subpage (optional)
+  └─ .nweb-cache.json # Cache (auto-generated)
+```
+
+**Output:**
+
+```
+my-site/
+  ├─ _nweb.txt        # DNS setup instructions
+  └─ _nweb.txt.json   # DNS TXT JSON (ready to paste)
+```
+
+### Advanced Usage
+
+#### Force Full Republish
+
+```bash
+# Delete cache to republish all assets
+rm /path/to/site/.nweb-cache.json
+nw-publish /path/to/site
+```
+
+#### Custom Relays
+
+```bash
+RELAYS="wss://custom-relay.example.com" nw-publish /path/to/site
+```
+
+#### Multi-Site Publishing
+
+```bash
+# Same pubkey, different sites
+nw-publish ../examples/hello-world
+nw-publish ../examples/blog
+
+# Extension loads newest by created_at timestamp
+```
+
+### Environment Variables Reference
+
+| Variable            | Required       | Description                     | Example                      |
+| ------------------- | -------------- | ------------------------------- | ---------------------------- |
+| `NOSTR_SK_HEX`      | ✅ Yes         | Nostr private key (64-char hex) | `a1b2c3d4...`                |
+| `RELAYS`            | ✅ Yes         | Comma-separated relay URLs      | `wss://shu01.shugur.net,...` |
+| `NWEB_HOST`         | ⚠️ Recommended | Your domain                     | `yourdomain.com`             |
+| `BLOSSOM_ENDPOINTS` | ❌ Optional    | Media upload endpoints          | `https://blossom.shugur.net` |
+
+### Troubleshooting
+
+#### "Cannot find module 'nostr-tools'"
+
+**Solution:** Run `npm install` first
+
+#### "NOSTR_SK_HEX not found"
+
+**Solution:** Create `.env` file:
+
+```bash
+echo "NOSTR_SK_HEX=your_hex_key_here" > .env
+```
+
+#### "Failed to publish to relays"
+
+**Causes:**
+
+1. Relays offline (try different relays)
+2. Events too large (relay limits typically ~64KB)
+3. Rate limiting (wait a few minutes)
+
+#### Site Not Loading After Publishing
+
+**Check:**
+
+1. DNS TXT record at `_nweb.<yourdomain.com>` is correct
+2. JSON format is valid
+3. Pubkey in DNS matches published events
+4. Wait for DNS propagation (5-30 minutes)
+
+## Protocol Details
+
+### Event Kinds
+
+| Kind  | Name          | Type        | Purpose                |
+| ----- | ------------- | ----------- | ---------------------- |
+| 40000 | HTML          | Immutable   | Page content           |
+| 40001 | CSS           | Immutable   | Stylesheets            |
+| 40002 | JS            | Immutable   | JavaScript             |
+| 40003 | Components    | Immutable   | Reusable snippets      |
+| 34235 | Page Manifest | Replaceable | Links assets per route |
+| 34236 | Site Index    | Replaceable | Maps routes            |
+
+### DNS Bootstrap
+
+DNS TXT record at `_nweb.<host>` contains JSON:
+
+```json
+{
+  "v": 1,
+  "pk": "5e56a8f2c91b3d4e7f0a9c1b2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e",
+  "relays": [
+    "wss://shu01.shugur.net",
+    "wss://shu02.shugur.net",
+    "wss://shu03.shugur.net"
+  ],
+  "blossom": ["https://blossom.shugur.net"]
+}
+```
+
+**Required Fields:**
+
+- `v` — Version (currently `1`)
+- `pk` — Public key (hex or npub format)
+- `relays` — Array of WebSocket relay URLs
+
+**Optional Fields:**
+
+- `blossom` — Array of Blossom media server URLs
+
+### Data Flow
+
+```
+DNS TXT (_nweb.example.com)
+    ↓
+Site Index (kind 34236, d="site-index")
+    ↓
+Page Manifest (kind 34235, d="/path")
+    ↓
+Assets (kinds 40000-40003)
+```
+
+### Security Model
+
+#### 1. Author Pinning
+
+DNS TXT record pins the site's public key. All events **MUST** be authored by this public key. Events from other authors are rejected.
+
+#### 2. Subresource Integrity (SRI)
+
+JavaScript assets (kind 40002) **MUST** include SHA256 content hash:
+
+```json
+["sha256", "a3f9c8b2e1d0..."]
+```
+
+Extension verifies downloaded content matches the hash before execution.
+
+#### 3. Content Security Policy (CSP)
+
+Content is rendered in a sandboxed environment with strict CSP:
+
+**Extension Pages:**
+```
+script-src 'self' 'wasm-unsafe-eval';
+object-src 'none';
+```
+
+**Sandboxed Pages:**
+```
+script-src 'self' 'unsafe-inline' 'unsafe-eval';
+style-src 'self' 'unsafe-inline';
+```
+
+#### 4. Rate Limiting
+
+- **DNS Queries:** Max 10 per host per minute
+- **Global Limit:** Max 100 DNS queries per minute across all hosts
+
+### Caching Strategy
+
+#### DNS Records
+
+- **TTL:** Offline only (no expiration)
+- **Strategy:** Always fetch fresh from DNS-over-HTTPS
+- **Fallback:** Use cache only when offline
+
+#### Site Index (kind 34236)
+
+- **TTL:** 0 seconds (always fresh)
+- **Strategy:** Always query relays, never cache
+- **Rationale:** Must detect site updates immediately
+
+#### Page Manifests (kind 34235)
+
+- **TTL:** 30 seconds
+- **Strategy:** Fetch fresh, compare with cached version
+- **Fallback:** Use cache if relays offline
+
+#### Assets (kinds 40000-40003)
+
+- **TTL:** 7 days
+- **Strategy:** Content-addressed, immutable
+- **Cache:** In-memory with LRU eviction (max 500 entries)
+
+## Media Assets
+
+Large media files (images, videos, fonts) should use Blossom:
+
+```html
+<img src="blossom://<sha256-hash>" alt="Image" />
+```
+
+The extension translates `blossom://` URLs to configured Blossom endpoints.
+
+## Best Practices
+
+### For Publishers
+
+1. **Use Multiple Relays** — Include at least 2-3 relays for redundancy
+2. **Optimize Assets** — Keep HTML, CSS, JS small (under 64KB per file)
+3. **Enable DNSSEC** — Protect against DNS spoofing
+4. **Test Before Publishing** — Verify site loads in extension before setting DNS
+5. **Cache Media** — Use Blossom for images, videos, fonts
+
+### For Users
+
+1. **Use Latest Extension** — Keep extension updated for bug fixes and features
+2. **Verify Authors** — Check site pubkey matches expected author
+3. **Report Issues** — Help improve the ecosystem by reporting bugs
+4. **Clear Cache** — If site looks outdated, try clearing cache
+5. **Check Console** — Use browser console (F12) to diagnose issues
+
+## Example: Complete Publishing Flow
+
+### 1. Create Your Site
+
+```bash
+mkdir my-site
+cd my-site
+```
+
+Create `index.html`:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Nostr Web Site</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Welcome to Nostr Web!</h1>
+  <p>This site is hosted on Nostr relays.</p>
+  <script src="app.js"></script>
+</body>
+</html>
+```
+
+Create `style.css`:
+
+```css
+body {
+  font-family: sans-serif;
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 20px;
+}
+
+h1 {
+  color: #7b16ff;
+}
+```
+
+Create `app.js`:
+
+```javascript
+console.log('Hello from Nostr Web!');
+```
+
+### 2. Configure Publisher
+
+Create `.env`:
+
+```bash
+NOSTR_SK_HEX="your_private_key_here"
+RELAYS="wss://shu01.shugur.net,wss://shu02.shugur.net"
+NWEB_HOST="example.com"
+```
+
+### 3. Publish
+
+```bash
+nw-publish .
+```
+
+Output:
+
+```
+✓ Using keypair from NOSTR_SK_HEX
+📝 Processing assets...
+[NEW] index.html -> event_id_1
+[NEW] style.css -> event_id_2
+[NEW] app.js -> event_id_3
+✅ Assets: 0 reused, 3 published
+
+📋 Processing manifests...
+[MANIF] / -> event_id_4 (new)
+
+🗂️  Updating site index...
+[INDEX] site-index -> event_id_5 (new)
+
+📄 Wrote _nweb.txt
+```
+
+### 4. Configure DNS
+
+Add TXT record from `_nweb.txt`:
+
+```
+Host: _nweb.example.com
+Type: TXT
+Value: {"v":1,"pk":"npub1...","relays":["wss://..."]}
+```
+
+### 5. Test
+
+1. Wait for DNS propagation (5-30 minutes)
+2. Type `example.com` in browser with extension installed
+3. Site loads automatically!
+
+## Links and Resources
+
+- **Extension Repository:** [GitHub](https://github.com/Shugur-Network/nostr-web/tree/main/extension)
+- **Publisher CLI:** [GitHub](https://github.com/Shugur-Network/nostr-web/tree/main/publisher)
+- **Nostr Protocol:** [nostr.com](https://nostr.com)
+- **Shugur Relays:** [shugur.net](https://shugur.net)
+
+## Contributing
+
+Contributions welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
+
+## License
+
+MIT License — See LICENSE file for details.
+
+---
+
+**Nostr Web by [Shugur](https://shugur.com)** — Decentralizing the web, one site at a time 🌐
