@@ -120,9 +120,22 @@ Your identity in Nostr is a cryptographic key pair:
 
 Everything in Nostr is an event: text notes, reactions, DMs, profile info, follow lists. Each event is signed, so it can be verified as authentic.
 
+### Nostr Web: Decentralized Website Hosting
+
+Nostr Web extends the Nostr protocol to host static websites as events. Instead of posting social media content, publishers can host entire websites (HTML, CSS, JavaScript) on Nostr relays:
+
+- **Content as Events**: Web pages are published as immutable events (kinds 40000-40003) with SHA256 integrity hashes
+- **DNS Bootstrap**: Traditional domain names (e.g., `example.com`) can point to Nostr-hosted sites via DNS TXT records at `_nweb.<domain>`
+- **Censorship-Resistant Websites**: Sites replicated across relays can't be taken down by a single entity
+- **Author Verification**: All content is cryptographically signed and verifiable
+- **Browser Extension**: Users can browse Nostr Web sites transparently with a Chrome extension
+
+**Learn More**: See the complete [Nostr Web User Guide](/nostr-web) for details on browsing and publishing decentralized websites.
+
 ## Related Documentation
 
 - Architecture: Understand how Shugur Relay implements these concepts
 - Installation Guide: Set up your own relay
 - Configuration Guide: Customize your relay's behavior
 - API Reference: Technical details for developers
+- Nostr Web: Learn about decentralized website hosting

@@ -1,11 +1,9 @@
 ---
-title: Nostr Web User Guide
+title: Nostr Web
 description: Complete guide to browsing and publishing decentralized websites on Nostr
 ---
 
 import { Aside } from '@astrojs/starlight/components';
-
-# Nostr Web User Guide
 
 Nostr Web enables hosting and browsing static websites as Nostr events, creating censorship-resistant, decentralized web publishing.
 
@@ -22,99 +20,120 @@ Nostr Web is a protocol and ecosystem for publishing static websites as Nostr ev
 - **Decentralized** — No single point of failure
 - **Accessible** — Works with existing Nostr infrastructure
 
-## For Users: Browse Nostr Web Sites
+## Protocol Details
 
-### Install the Browser Extension
+### Event Kinds
 
-The Nostr Web browser extension enables transparent browsing of decentralized websites.
+| Kind  | Name          | Type        | Purpose                |
+| ----- | ------------- | ----------- | ---------------------- |
+| 40000 | HTML          | Immutable   | Page content           |
+| 40001 | CSS           | Immutable   | Stylesheets            |
+| 40002 | JS            | Immutable   | JavaScript             |
+| 40003 | Components    | Immutable   | Reusable snippets      |
+| 34235 | Page Manifest | Replaceable | Links assets per route |
+| 34236 | Site Index    | Replaceable | Maps routes            |
 
-#### Installation Steps
+### DNS Bootstrap
 
-1. **Download** from [Chrome Web Store](https://chrome.google.com/webstore) (coming soon)
-2. Or download the latest release ZIP from [GitHub Releases](https://github.com/Shugur-Network/nostr-web/releases)
-3. **Load in Chrome:**
-   - Open `chrome://extensions/`
-   - Enable "Developer mode" (top-right toggle)
-   - Click "Load unpacked"
-   - Select the extension directory
+DNS TXT record at `_nweb.<host>` contains JSON:
 
-#### Features
-
-- 🌐 **Transparent Browsing** — Just type a URL, automatic Nostr Web detection
-- ⚡ **Fast Loading** — Parallel relay fetching with smart caching
-- 🔒 **Secure** — Author verification, SHA256 integrity, sandboxed rendering
-- 💾 **Smart Caching** — DNS offline-only, site index always fresh
-- 📡 **Multi-Relay** — Fetches from multiple relays for redundancy
-
-### Using the Extension
-
-#### Automatic Detection (Recommended)
-
-1. Type any domain in your browser address bar (e.g., `example.com`)
-2. Extension automatically checks for `_nweb.<domain>` DNS TXT record
-3. If found, loads the Nostr Web site automatically
-
-**How it works:**
-
-```
-User navigates to example.com
-    ↓
-Extension intercepts navigation
-    ↓
-Checks DNS for _nweb.example.com
-    ↓
-Found? → Load from Nostr relays
-Not found? → Allow normal browsing
+```json
+{
+  "v": 1,
+  "pk": "5e56a8f2c91b3d4e7f0a9c1b2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e",
+  "relays": [
+    "wss://shu01.shugur.net",
+    "wss://shu02.shugur.net",
+    "wss://shu03.shugur.net"
+  ],
+  "blossom": ["https://blossom.shugur.net"]
+}
 ```
 
-#### Manual Entry
+**Required Fields:**
 
-1. Click the extension icon in your browser toolbar
-2. Enter a domain (e.g., `nweb.shugur.com`)
-3. Click "Open" or press Enter
-4. Page loads in the Nostr Web viewer
+- `v` — Version (currently `1`)
+- `pk` — Public key (hex or npub format)
+- `relays` — Array of WebSocket relay URLs
 
-#### Settings
+**Optional Fields:**
 
-Click the ⚙️ icon in the viewer to access:
+- `blossom` — Array of Blossom media server URLs
 
-- **Default Website** — Set a site to load on extension first launch
-- **Clear Cache** — Remove all cached DNS records and events (preserves settings)
+### Data Flow
 
-### Troubleshooting
+```
+DNS TXT (_nweb.example.com)
+    ↓
+Site Index (kind 34236, d="site-index")
+    ↓
+Page Manifest (kind 34235, d="/path")
+    ↓
+Assets (kinds 40000-40003)
+```
 
-#### Extension not detecting sites
+### Security Model
 
-**Problem:** Typing a domain doesn't load Nostr Web site
+#### 1. Author Pinning
 
-**Solutions:**
+DNS TXT record pins the site's public key. All events **MUST** be authored by this public key. Events from other authors are rejected.
 
-1. Check DNS TXT record exists at `_nweb.<domain>`
-2. Wait for DNS propagation (5-30 minutes after DNS update)
-3. Try manual entry via extension popup
-4. Check browser console for errors (F12)
+#### 2. Subresource Integrity (SRI)
 
-#### Slow loading
+JavaScript assets (kind 40002) **MUST** include SHA256 content hash:
 
-**Problem:** Pages take more than 10 seconds to load
+```json
+["sha256", "a3f9c8b2e1d0..."]
+```
 
-**Solutions:**
+Extension verifies downloaded content matches the hash before execution.
 
-1. Check your internet connection
-2. Verify relays are online and responding
-3. Clear extension cache (Settings → Clear Cache)
-4. Try a different network
+#### 3. Content Security Policy (CSP)
 
-#### Scripts not working
+Content is rendered in a sandboxed environment with strict CSP:
 
-**Problem:** JavaScript on page doesn't execute
+**Extension Pages:**
+```
+script-src 'self' 'wasm-unsafe-eval';
+object-src 'none';
+```
 
-**Solutions:**
+**Sandboxed Pages:**
+```
+script-src 'self' 'unsafe-inline' 'unsafe-eval';
+style-src 'self' 'unsafe-inline';
+```
 
-1. Check browser console for CSP errors (F12 → Console)
-2. Verify the site was published correctly
-3. Try refreshing the page
-4. Clear cache and reload
+#### 4. Rate Limiting
+
+- **DNS Queries:** Max 10 per host per minute
+- **Global Limit:** Max 100 DNS queries per minute across all hosts
+
+### Caching Strategy
+
+#### DNS Records
+
+- **TTL:** Offline only (no expiration)
+- **Strategy:** Always fetch fresh from DNS-over-HTTPS
+- **Fallback:** Use cache only when offline
+
+#### Site Index (kind 34236)
+
+- **TTL:** 0 seconds (always fresh)
+- **Strategy:** Always query relays, never cache
+- **Rationale:** Must detect site updates immediately
+
+#### Page Manifests (kind 34235)
+
+- **TTL:** 30 seconds
+- **Strategy:** Fetch fresh, compare with cached version
+- **Fallback:** Use cache if relays offline
+
+#### Assets (kinds 40000-40003)
+
+- **TTL:** 7 days
+- **Strategy:** Content-addressed, immutable
+- **Cache:** In-memory with LRU eviction (max 500 entries)
 
 ## For Publishers: Host Your Site on Nostr
 
@@ -319,121 +338,6 @@ echo "NOSTR_SK_HEX=your_hex_key_here" > .env
 3. Pubkey in DNS matches published events
 4. Wait for DNS propagation (5-30 minutes)
 
-## Protocol Details
-
-### Event Kinds
-
-| Kind  | Name          | Type        | Purpose                |
-| ----- | ------------- | ----------- | ---------------------- |
-| 40000 | HTML          | Immutable   | Page content           |
-| 40001 | CSS           | Immutable   | Stylesheets            |
-| 40002 | JS            | Immutable   | JavaScript             |
-| 40003 | Components    | Immutable   | Reusable snippets      |
-| 34235 | Page Manifest | Replaceable | Links assets per route |
-| 34236 | Site Index    | Replaceable | Maps routes            |
-
-### DNS Bootstrap
-
-DNS TXT record at `_nweb.<host>` contains JSON:
-
-```json
-{
-  "v": 1,
-  "pk": "5e56a8f2c91b3d4e7f0a9c1b2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e",
-  "relays": [
-    "wss://shu01.shugur.net",
-    "wss://shu02.shugur.net",
-    "wss://shu03.shugur.net"
-  ],
-  "blossom": ["https://blossom.shugur.net"]
-}
-```
-
-**Required Fields:**
-
-- `v` — Version (currently `1`)
-- `pk` — Public key (hex or npub format)
-- `relays` — Array of WebSocket relay URLs
-
-**Optional Fields:**
-
-- `blossom` — Array of Blossom media server URLs
-
-### Data Flow
-
-```
-DNS TXT (_nweb.example.com)
-    ↓
-Site Index (kind 34236, d="site-index")
-    ↓
-Page Manifest (kind 34235, d="/path")
-    ↓
-Assets (kinds 40000-40003)
-```
-
-### Security Model
-
-#### 1. Author Pinning
-
-DNS TXT record pins the site's public key. All events **MUST** be authored by this public key. Events from other authors are rejected.
-
-#### 2. Subresource Integrity (SRI)
-
-JavaScript assets (kind 40002) **MUST** include SHA256 content hash:
-
-```json
-["sha256", "a3f9c8b2e1d0..."]
-```
-
-Extension verifies downloaded content matches the hash before execution.
-
-#### 3. Content Security Policy (CSP)
-
-Content is rendered in a sandboxed environment with strict CSP:
-
-**Extension Pages:**
-```
-script-src 'self' 'wasm-unsafe-eval';
-object-src 'none';
-```
-
-**Sandboxed Pages:**
-```
-script-src 'self' 'unsafe-inline' 'unsafe-eval';
-style-src 'self' 'unsafe-inline';
-```
-
-#### 4. Rate Limiting
-
-- **DNS Queries:** Max 10 per host per minute
-- **Global Limit:** Max 100 DNS queries per minute across all hosts
-
-### Caching Strategy
-
-#### DNS Records
-
-- **TTL:** Offline only (no expiration)
-- **Strategy:** Always fetch fresh from DNS-over-HTTPS
-- **Fallback:** Use cache only when offline
-
-#### Site Index (kind 34236)
-
-- **TTL:** 0 seconds (always fresh)
-- **Strategy:** Always query relays, never cache
-- **Rationale:** Must detect site updates immediately
-
-#### Page Manifests (kind 34235)
-
-- **TTL:** 30 seconds
-- **Strategy:** Fetch fresh, compare with cached version
-- **Fallback:** Use cache if relays offline
-
-#### Assets (kinds 40000-40003)
-
-- **TTL:** 7 days
-- **Strategy:** Content-addressed, immutable
-- **Cache:** In-memory with LRU eviction (max 500 entries)
-
 ## Media Assets
 
 Large media files (images, videos, fonts) should use Blossom:
@@ -443,6 +347,100 @@ Large media files (images, videos, fonts) should use Blossom:
 ```
 
 The extension translates `blossom://` URLs to configured Blossom endpoints.
+
+## For Users: Browse Nostr Web Sites
+
+### Install the Browser Extension
+
+The Nostr Web browser extension enables transparent browsing of decentralized websites.
+
+#### Installation Steps
+
+1. **Download** from [Chrome Web Store](https://chrome.google.com/webstore) (coming soon)
+2. Or download the latest release ZIP from [GitHub Releases](https://github.com/Shugur-Network/nostr-web/releases)
+3. **Load in Chrome:**
+   - Open `chrome://extensions/`
+   - Enable "Developer mode" (top-right toggle)
+   - Click "Load unpacked"
+   - Select the extension directory
+
+#### Features
+
+- 🌐 **Transparent Browsing** — Just type a URL, automatic Nostr Web detection
+- ⚡ **Fast Loading** — Parallel relay fetching with smart caching
+- 🔒 **Secure** — Author verification, SHA256 integrity, sandboxed rendering
+- 💾 **Smart Caching** — DNS offline-only, site index always fresh
+- 📡 **Multi-Relay** — Fetches from multiple relays for redundancy
+
+### Using the Extension
+
+#### Automatic Detection (Recommended)
+
+1. Type any domain in your browser address bar (e.g., `example.com`)
+2. Extension automatically checks for `_nweb.<domain>` DNS TXT record
+3. If found, loads the Nostr Web site automatically
+
+**How it works:**
+
+```
+User navigates to example.com
+    ↓
+Extension intercepts navigation
+    ↓
+Checks DNS for _nweb.example.com
+    ↓
+Found? → Load from Nostr relays
+Not found? → Allow normal browsing
+```
+
+#### Manual Entry
+
+1. Click the extension icon in your browser toolbar
+2. Enter a domain (e.g., `nweb.shugur.com`)
+3. Click "Open" or press Enter
+4. Page loads in the Nostr Web viewer
+
+#### Settings
+
+Click the ⚙️ icon in the viewer to access:
+
+- **Default Website** — Set a site to load on extension first launch
+- **Clear Cache** — Remove all cached DNS records and events (preserves settings)
+
+### Troubleshooting
+
+#### Extension not detecting sites
+
+**Problem:** Typing a domain doesn't load Nostr Web site
+
+**Solutions:**
+
+1. Check DNS TXT record exists at `_nweb.<domain>`
+2. Wait for DNS propagation (5-30 minutes after DNS update)
+3. Try manual entry via extension popup
+4. Check browser console for errors (F12)
+
+#### Slow loading
+
+**Problem:** Pages take more than 10 seconds to load
+
+**Solutions:**
+
+1. Check your internet connection
+2. Verify relays are online and responding
+3. Clear extension cache (Settings → Clear Cache)
+4. Try a different network
+
+#### Scripts not working
+
+**Problem:** JavaScript on page doesn't execute
+
+**Solutions:**
+
+1. Check browser console for CSP errors (F12 → Console)
+2. Verify the site was published correctly
+3. Try refreshing the page
+4. Clear cache and reload
 
 ## Best Practices
 
