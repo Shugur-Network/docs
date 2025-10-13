@@ -143,12 +143,34 @@ style-src 'self' 'unsafe-inline';
 - npm or yarn
 - A Nostr private key (hex format)
 - Access to Nostr relays
+- Git (for cloning the repository)
 
 ### Installation
 
+#### 1. Clone the Repository
+
+First, clone or download the Nostr Web repository:
+
 ```bash
+# Clone the repository
+git clone https://github.com/Shugur-Network/nostr-web.git
+
+# Navigate to the nostr-web directory
+cd nostr-web
+```
+
+Alternatively, you can download the latest release from [GitHub Releases](https://github.com/Shugur-Network/nostr-web/releases).
+
+#### 2. Install Publisher
+
+```bash
+# Navigate to the publisher directory
 cd publisher
+
+# Install dependencies
 npm install
+
+# Create global command
 npm link
 ```
 
@@ -462,9 +484,27 @@ Click the ⚙️ icon in the viewer to access:
 
 ## Example: Complete Publishing Flow
 
+### 0. Setup Nostr Web Publisher
+
+First, clone and install the Nostr Web publisher:
+
+```bash
+# Clone the repository
+git clone https://github.com/Shugur-Network/nostr-web.git
+cd nostr-web/publisher
+
+# Install dependencies
+npm install
+npm link
+```
+
 ### 1. Create Your Site
 
 ```bash
+# Navigate to a working directory
+cd ~
+
+# Create your site directory
 mkdir my-site
 cd my-site
 ```
