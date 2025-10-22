@@ -124,7 +124,7 @@ Everything in Nostr is an event: text notes, reactions, DMs, profile info, follo
 
 Nostr Web extends the Nostr protocol to host static websites as events. Instead of posting social media content, publishers can host entire websites (HTML, CSS, JavaScript) on Nostr relays:
 
-- **Content as Events**: Web pages are published as immutable events (kinds 40000-40003) with SHA256 integrity hashes
+- **Content as Events**: Web pages can be published as Nostr Web assets (kind 1125) with SHA256 integrity hashes; manifests and index/entry events (kinds 1126, 31126, 11126) wire pages together.
 - **DNS Bootstrap**: Traditional domain names (e.g., `example.com`) can point to Nostr-hosted sites via DNS TXT records at `_nweb.<domain>`
 - **Censorship-Resistant Websites**: Sites replicated across relays can't be taken down by a single entity
 - **Author Verification**: All content is cryptographically signed and verifiable

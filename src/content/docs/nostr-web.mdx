@@ -24,14 +24,12 @@ Nostr Web is a protocol and ecosystem for publishing static websites as Nostr ev
 
 ### Event Kinds
 
-| Kind  | Name          | Type        | Purpose                |
-| ----- | ------------- | ----------- | ---------------------- |
-| 40000 | HTML          | Immutable   | Page content           |
-| 40001 | CSS           | Immutable   | Stylesheets            |
-| 40002 | JS            | Immutable   | JavaScript             |
-| 40003 | Components    | Immutable   | Reusable snippets      |
-| 34235 | Page Manifest | Replaceable | Links assets per route |
-| 34236 | Site Index    | Replaceable | Maps routes            |
+| Kind    | Name          | Type        | Purpose                              |
+| ------- | ------------- | ----------- | ------------------------------------ |
+| 1125    | Asset         | Regular     | All web assets (HTML, CSS, JS, etc.) |
+| 1126    | Page Manifest | Regular     | Links assets per page                |
+| 31126   | Site Index    | Addressable | Maps routes (content-addressed)      |
+| 11126   | Entrypoint    | Replaceable | Points to current site index         |
 
 ### DNS Bootstrap
 
@@ -45,8 +43,7 @@ DNS TXT record at `_nweb.<host>` contains JSON:
     "wss://shu01.shugur.net",
     "wss://shu02.shugur.net",
     "wss://shu03.shugur.net"
-  ],
-  "blossom": ["https://blossom.shugur.net"]
+  ]
 }
 ```
 
@@ -56,21 +53,23 @@ DNS TXT record at `_nweb.<host>` contains JSON:
 - `pk` — Public key (hex or npub format)
 - `relays` — Array of WebSocket relay URLs
 
-**Optional Fields:**
-
-- `blossom` — Array of Blossom media server URLs
+**Note:** The DNS record does NOT contain the site index event ID. Clients query relays for the most recent entrypoint (kind 11126) from the specified pubkey, which points to the current site index (kind 31126). This enables automatic updates without DNS changes.
 
 ### Data Flow
 
 ```
 DNS TXT (_nweb.example.com)
     ↓
-Site Index (kind 34236, d="site-index")
+Entrypoint (kind 11126) ← Query by pubkey
     ↓
-Page Manifest (kind 34235, d="/path")
+Site Index (kind 31126) ← Reference via 'a' tag
     ↓
-Assets (kinds 40000-40003)
+Page Manifest (kind 1126) ← Get for specific route
+    ↓
+Assets (kind 1125) ← HTML, CSS, JS, etc.
 ```
+
+**Key Change:** DNS is set once. All content updates happen via new entrypoint events pointing to new site indexes, eliminating DNS propagation delays.
 
 ### Security Model
 
@@ -78,15 +77,18 @@ Assets (kinds 40000-40003)
 
 DNS TXT record pins the site's public key. All events **MUST** be authored by this public key. Events from other authors are rejected.
 
-#### 2. Subresource Integrity (SRI)
+#### 2. Content Addressing & Integrity
 
-JavaScript assets (kind 40002) **MUST** include SHA256 content hash:
+All assets (kind 1125) **MUST** include SHA256 content hash in the `x` tag:
 
 ```json
-["sha256", "a3f9c8b2e1d0..."]
+["x", "a3f9c8b2e1d0..."]
 ```
 
-Extension verifies downloaded content matches the hash before execution.
+This enables:
+- **Content deduplication** - Relays can identify identical assets
+- **Integrity verification** - Clients verify content matches the hash
+- **Efficient caching** - Assets can be cached by hash
 
 #### 3. Content Security Policy (CSP)
 
@@ -117,22 +119,28 @@ style-src 'self' 'unsafe-inline';
 - **Strategy:** Always fetch fresh from DNS-over-HTTPS
 - **Fallback:** Use cache only when offline
 
-#### Site Index (kind 34236)
-
-- **TTL:** 0 seconds (always fresh)
-- **Strategy:** Always query relays, never cache
-- **Rationale:** Must detect site updates immediately
-
-#### Page Manifests (kind 34235)
+#### Site Index (kind 31126)
 
 - **TTL:** 30 seconds
-- **Strategy:** Fetch fresh, compare with cached version
+- **Strategy:** Fetch fresh, content-addressed by `d` tag (truncated hash)
 - **Fallback:** Use cache if relays offline
 
-#### Assets (kinds 40000-40003)
+#### Entrypoint (kind 11126)
+
+- **TTL:** 0 seconds (always fresh)
+- **Strategy:** Always query relays for latest replaceable event
+- **Rationale:** Must detect site updates immediately
+
+#### Page Manifests (kind 1126)
+
+- **TTL:** 30 seconds
+- **Strategy:** Fetch fresh, identified by event ID
+- **Fallback:** Use cache if relays offline
+
+#### Assets (kind 1125)
 
 - **TTL:** 7 days
-- **Strategy:** Content-addressed, immutable
+- **Strategy:** Content-addressed by SHA256 hash (from `x` tag)
 - **Cache:** In-memory with LRU eviction (max 500 entries)
 
 ## For Publishers: Host Your Site on Nostr
@@ -153,20 +161,23 @@ First, clone or download the Nostr Web repository:
 
 ```bash
 # Clone the repository
-git clone https://github.com/Shugur-Network/nostr-web.git
+git clone https://github.com/Shugur-Network/nw-publisher.git
 
-# Navigate to the nostr-web directory
-cd nostr-web
+# Navigate to the nw-publisher directory
+cd nw-publisher
 ```
 
-Alternatively, you can download the latest release from [GitHub Releases](https://github.com/Shugur-Network/nostr-web/releases).
-
-#### 2. Install Publisher
+Alternatively, install directly from npm (recommended):
 
 ```bash
-# Navigate to the publisher directory
-cd publisher
+npm install -g nw-publisher
+```
 
+Or download from [GitHub Releases](https://github.com/Shugur-Network/nw-publisher/releases).
+
+#### 2. Install Publisher (if cloned from source)
+
+```bash
 # Install dependencies
 npm install
 
@@ -174,7 +185,7 @@ npm install
 npm link
 ```
 
-This creates a global `nw-publish` command you can use anywhere.
+This creates a global `nw-publisher` command you can use anywhere.
 
 ### Quick Start
 
@@ -203,13 +214,13 @@ BLOSSOM_ENDPOINTS="https://blossom.shugur.net"
 #### 2. Publish Your Site
 
 ```bash
-nw-publish /path/to/your/site
+nw-publisher deploy /path/to/your/site
 ```
 
 Example:
 
 ```bash
-nw-publish ../examples/hello-world
+nw-publisher deploy ../examples/hello-world
 ```
 
 #### 3. Set Up DNS
@@ -221,6 +232,8 @@ Host: _nweb.yourdomain.com
 Type: TXT
 Value: {"v":1,"pk":"npub1...","relays":["wss://relay.damus.io",...]}
 ```
+
+**Note:** DNS only needs to be set once! All future site updates happen through new entrypoint events (kind 11126), eliminating DNS propagation delays.
 
 **DNS Provider Examples:**
 
@@ -244,34 +257,39 @@ TTL: 300
 
 ```
 Static Site Folder
-  ├─> Scan files (HTML, CSS, JS)
+  ├─> Scan files (HTML, CSS, JS, fonts, etc.)
   ├─> Compute SHA256 hashes
   ├─> Sign as Nostr events
-  │     ├─> Kind 40000: HTML content
-  │     ├─> Kind 40001: CSS stylesheets
-  │     ├─> Kind 40002: JavaScript modules
-  │     └─> Kind 40003: Reusable components
+  │     └─> Kind 1125: All assets (HTML, CSS, JS, fonts, images)
   ├─> Publish to relays (parallel)
-  ├─> Create page manifests (kind 34235)
-  └─> Update site index (kind 34236)
+  ├─> Create page manifests (kind 1126)
+  ├─> Update site index (kind 31126)
+  └─> Update entrypoint (kind 11126)
 ```
 
 ### Smart Caching
 
 The publisher uses intelligent caching to avoid republishing unchanged content:
 
-**Immutable assets** (kinds 40000-40003):
+**Immutable assets** (kind 1125):
 
-- **Cache file:** `.nweb-cache.json` (in site folder)
-- **Cache key:** `${filepath}:${hash}` (content-addressed)
-- **Behavior:** If file unchanged, reuses cached event ID
+- **Cache source:** Nostr relays (queries on every deploy)
+- **Cache key:** `${kind}:${content-hash}` (content-addressed)
+- **Behavior:** If file unchanged and found on relays, reuses cached event ID
 - **Benefit:** Only publishes new/changed assets
+- **Reliability:** Always reflects true relay state, no stale local files
 
-**Addressable events** (kinds 34235, 34236):
+**Addressable events** (kind 31126 - Site Index):
 
-- **Always republished** with fresh `created_at` timestamps
-- Ensures extension detects which site is newest
-- Allows multiple sites with same pubkey to stay synchronized
+- Uses content-addressed `d` tag (first 7-12 chars of content hash)
+- Different content = different event
+- Each version is preserved on relays
+
+**Replaceable events** (kind 11126 - Entrypoint):
+
+- Always republished to point to current site index
+- Only latest event per author is kept
+- Ensures clients find the newest version
 
 ### Site Structure
 
@@ -282,8 +300,7 @@ my-site/
   ├─ index.html       # Home page
   ├─ style.css        # Stylesheet
   ├─ app.js           # JavaScript
-  ├─ about.html       # Subpage (optional)
-  └─ .nweb-cache.json # Cache (auto-generated)
+  └─ about.html       # Subpage (optional)
 ```
 
 **Output:**
@@ -299,25 +316,24 @@ my-site/
 #### Force Full Republish
 
 ```bash
-# Delete cache to republish all assets
-rm /path/to/site/.nweb-cache.json
-nw-publish /path/to/site
+# Rebuild cache from relays
+nw-publisher deploy /path/to/site --rebuild-cache
 ```
 
 #### Custom Relays
 
 ```bash
-RELAYS="wss://custom-relay.example.com" nw-publish /path/to/site
+RELAYS="wss://custom-relay.example.com" nw-publisher deploy /path/to/site
 ```
 
 #### Multi-Site Publishing
 
 ```bash
 # Same pubkey, different sites
-nw-publish ../examples/hello-world
-nw-publish ../examples/blog
+nw-publisher deploy ../examples/hello-world
+nw-publisher deploy ../examples/blog
 
-# Extension loads newest by created_at timestamp
+# Each site uses different version tracking
 ```
 
 ### Environment Variables Reference
@@ -327,7 +343,6 @@ nw-publish ../examples/blog
 | `NOSTR_SK_HEX`      | ✅ Yes         | Nostr private key (64-char hex) | `a1b2c3d4...`                |
 | `RELAYS`            | ✅ Yes         | Comma-separated relay URLs      | `wss://shu01.shugur.net,...` |
 | `NWEB_HOST`         | ⚠️ Recommended | Your domain                     | `yourdomain.com`             |
-| `BLOSSOM_ENDPOINTS` | ❌ Optional    | Media upload endpoints          | `https://blossom.shugur.net` |
 
 ### Troubleshooting
 
@@ -360,15 +375,77 @@ echo "NOSTR_SK_HEX=your_hex_key_here" > .env
 3. Pubkey in DNS matches published events
 4. Wait for DNS propagation (5-30 minutes)
 
-## Media Assets
+## Additional Commands
 
-Large media files (images, videos, fonts) should use Blossom:
+The publisher includes powerful commands for managing your site:
 
-```html
-<img src="blossom://<sha256-hash>" alt="Image" />
+### Check Site Status
+
+```bash
+# Your own site
+nw-publisher status
+
+# Another site (no private key needed)
+nw-publisher status npub1abc123...
 ```
 
-The extension translates `blossom://` URLs to configured Blossom endpoints.
+### Version Management
+
+```bash
+# List all versions
+nw-publisher versions list
+
+# Show specific version
+nw-publisher versions show 1.0.0
+
+# Compare versions
+nw-publisher versions compare 0.9.0 1.0.0
+```
+
+### Sync Across Relays
+
+```bash
+# Ensure all versions exist on all relays
+nw-publisher sync
+```
+
+### Clean Up Events
+
+```bash
+# Preview what will be deleted
+nw-publisher cleanup --orphans --dry-run
+
+# Delete orphaned events
+nw-publisher cleanup --orphans
+
+# Delete a specific version
+nw-publisher cleanup --version 0.1.0
+
+# Full reset (delete all events)
+nw-publisher cleanup --all
+```
+
+## Media Assets
+
+Large media files (images, videos, fonts) are included as assets (kind 1125) with appropriate MIME types:
+
+```html
+<!-- Image -->
+<img src="image.png" alt="Image" />
+
+<!-- Video -->
+<video src="video.mp4" controls></video>
+
+<!-- Font -->
+<style>
+@font-face {
+  font-family: 'MyFont';
+  src: url('font.woff2') format('woff2');
+}
+</style>
+```
+
+The publisher automatically detects MIME types and includes them in the `m` tag of each asset event.
 
 ## For Users: Browse Nostr Web Sites
 
@@ -378,13 +455,11 @@ The Nostr Web browser extension enables transparent browsing of decentralized we
 
 #### Installation Steps
 
-1. **Download** from [Chrome Web Store](https://chrome.google.com/webstore) (coming soon)
-2. Or download the latest release ZIP from [GitHub Releases](https://github.com/Shugur-Network/nostr-web/releases)
-3. **Load in Chrome:**
-   - Open `chrome://extensions/`
-   - Enable "Developer mode" (top-right toggle)
-   - Click "Load unpacked"
-   - Select the extension directory
+1. **Download** from [Chrome Web Store](https://chromewebstore.google.com/detail/nostr-web-browser/hhdngjdmlabdachflbdfapkogadodkif)
+2. Or download from [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/nostr-web-browser/)
+3. **Load in Browser:**
+   - **Chrome:** Open `chrome://extensions/`, enable "Developer mode", click "Load unpacked"
+   - **Firefox:** Open `about:debugging#/runtime/this-firefox`, click "Load Temporary Add-on"
 
 #### Features
 
@@ -486,14 +561,15 @@ Click the ⚙️ icon in the viewer to access:
 
 ### 0. Setup Nostr Web Publisher
 
-First, clone and install the Nostr Web publisher:
+First, install the Nostr Web publisher:
 
 ```bash
-# Clone the repository
-git clone https://github.com/Shugur-Network/nostr-web.git
-cd nostr-web/publisher
+# Install from npm (recommended)
+npm install -g nw-publisher
 
-# Install dependencies
+# Or clone from source
+git clone https://github.com/Shugur-Network/nw-publisher.git
+cd nw-publisher
 npm install
 npm link
 ```
@@ -560,7 +636,7 @@ NWEB_HOST="example.com"
 ### 3. Publish
 
 ```bash
-nw-publish .
+nw-publisher deploy .
 ```
 
 Output:
@@ -577,7 +653,10 @@ Output:
 [MANIF] / -> event_id_4 (new)
 
 🗂️  Updating site index...
-[INDEX] site-index -> event_id_5 (new)
+[INDEX] version 0.0.1 -> event_id_5 (new)
+
+🚀 Updating entrypoint...
+[ENTRY] -> event_id_6 (updated)
 
 📄 Wrote _nweb.txt
 ```

@@ -473,33 +473,32 @@ func ValidateTimeCapsuleEvent(evt *nostr.Event) error {
 }
 ```
 
-#### Nostr Web Pages (NIP-YY & NIP-ZZ)
+#### Nostr Web Pages (NIP-YY / NIP-ZZ)
 
 **Status**: Supported  
 **Documentation**: [Nostr Web Guide](/nostr-web)
 
-Decentralized static website hosting on Nostr:
+Decentralized static website hosting on Nostr using the updated NIP specification:
 
-- **NIP-YY**: Event kinds for web pages (40000-40003, 34235, 34236)
-- **NIP-ZZ**: DNS bootstrap protocol for domain-to-pubkey resolution
+- **NIP-YY**: Event kinds for web pages (now using kinds 1125, 1126, 31126, 11126)
+- **NIP-ZZ**: DNS bootstrap protocol for domain-to-pubkey resolution (DNS `_nweb` record)
 
-**Event Kinds Supported:**
+**Event Kinds Supported (new spec):**
 
-| Kind  | Name          | Type        | Purpose                |
-| ----- | ------------- | ----------- | ---------------------- |
-| 40000 | HTML          | Immutable   | Page content           |
-| 40001 | CSS           | Immutable   | Stylesheets            |
-| 40002 | JS            | Immutable   | JavaScript             |
-| 40003 | Components    | Immutable   | Reusable snippets      |
-| 34235 | Page Manifest | Replaceable | Links assets per route |
-| 34236 | Site Index    | Replaceable | Maps routes            |
+| Kind   | Name          | Type         | Purpose                              |
+| ------ | ------------- | ------------ | ------------------------------------ |
+| 1125   | Asset         | Regular      | All web assets (HTML, CSS, JS, fonts, images)
+| 1126   | Page Manifest | Regular      | Links assets per page                |
+| 31126  | Site Index    | Addressable  | Maps routes (content-addressed, `d` tag)
+| 11126  | Entrypoint    | Replaceable  | Points to current site index         |
 
 **Features:**
 
-- Content-addressed assets with SHA256 integrity
-- Parameterized replaceable events for dynamic updates
+- Content-addressed assets with SHA256 integrity (`x` tag)
+- Content-addressed site index (short `d` tag) for versioning
+- Entrypoint replaceable event for instant updates without DNS changes
 - Multi-relay redundancy for availability
-- DNS TXT record bootstrap at `_nweb.<domain>`
+- DNS TXT record bootstrap at `_nweb.<domain>` for initial pubkey/relays
 - Blossom integration for media assets
 
 **Learn More:**
@@ -589,14 +588,12 @@ func (pv *PluginValidator) ValidateEvent(event *nostr.Event) error {
 | 30818 | NIP-54 | Wiki Article | Full support |
 | 30819 | NIP-54 | Wiki Redirect | Full support |
 | 31922-31925 | NIP-52 | Calendar Events | Full support |
-| 34235 | NIP-YY | Page Manifest | Full support |
-| 34236 | NIP-YY | Site Index | Full support |
 | 34550 | NIP-72 | Community | Full support |
-| 40000 | NIP-YY | HTML Content | Full support |
-| 40001 | NIP-YY | CSS Stylesheet | Full support |
-| 40002 | NIP-YY | JavaScript | Full support |
-| 40003 | NIP-YY | Component | Full support |
 | 4550 | NIP-72 | Community Approval | Full support |
+| 1125  | NIP-YY | Asset (HTML/CSS/JS/media) | Full support |
+| 1126  | NIP-YY | Page Manifest | Full support |
+| 11126 | NIP-YY | Entrypoint (replaceable) | Full support |
+| 31126 | NIP-YY | Site Index (content-addressed) | Full support |
 
 ### Filter Support
 
